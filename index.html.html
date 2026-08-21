@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGARAKSA - Bank Kata, Game Milah Tutur & Uji Kontekstual TRU</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        baduy: {
+                            dark: '#0b0f17',
+                            card: '#131b29',
+                            border: '#243047',
+                            navy: '#2a3f52',
+                            teal: '#55788b',
+                            cyan: '#38bdf8',
+                            light: '#ebe6e3',
+                            accent: '#06b6d4',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            emerald: '#10b981',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f17;
+            color: #f5f5f5;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #243047;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        /* Glow Effects */
+        .glow-cyan { box-shadow: 0 0 25px rgba(56, 189, 248, 0.25); }
+        .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
+        .glow-rose { box-shadow: 0 0 25px rgba(244, 63, 94, 0.25); }
+        .glow-emerald { box-shadow: 0 0 25px rgba(16, 185, 129, 0.25); }
+
+        #wheelCanvas {
+            filter: drop-shadow(0px 10px 18px rgba(0,0,0,0.6));
+        }
+    </style>
+</head>
+<body class="bg-baduy-dark text-slate-100 min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+
+    <!-- Toast Notification System -->
+    <div id="toastNotification" class="fixed top-5 right-5 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-baduy-card border border-baduy-cyan/50 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 glow-cyan">
+            <div id="toastIcon" class="text-xl text-baduy-cyan">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <p id="toastMessage" class="text-xs font-semibold">Pemberitahuan sistem.</p>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-baduy-card/90 border-r border-baduy-border/60 flex flex-col justify-between shrink-0 p-4 sticky top-0 z-40 backdrop-blur-md">
+        <div>
+            <!-- Logo Header -->
+            <div class="flex items-center space-x-3 p-2 mb-6 border-b border-baduy-border/40 pb-4">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-baduy-navy via-baduy-teal to-baduy-cyan flex items-center justify-center text-white shadow-lg border border-baduy-cyan/30">
+                    <i class="fa-solid fa-comments text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg tracking-wide text-white flex items-center gap-1.5">
+                        NGARAKSA
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-baduy-cyan/20 text-baduy-cyan border border-baduy-cyan/30 font-bold">TRU</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-medium">Ngaraksa Tutur, Ngaraksa Rasa</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-1.5">
+                <button id="nav-bank-kata" onclick="switchTab('bank-kata')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 bg-baduy-cyan/20 text-baduy-cyan border border-baduy-cyan/30">
+                    <i class="fa-solid fa-book-bookmark w-5 text-center text-sm text-amber-400"></i>
+                    <span>Bank Kata</span>
+                    <span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">100 Entri</span>
+                </button>
+
+                <button id="nav-milah" onclick="switchTab('milah')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent">
+                    <i class="fa-solid fa-arrows-spin w-5 text-center text-sm text-baduy-cyan"></i>
+                    <span>Milah Tutur (Roda)</span>
+                    <span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-baduy-cyan/20 text-baduy-cyan border border-baduy-cyan/30 font-bold">Game</span>
+                </button>
+
+                <button id="nav-materi" onclick="switchTab('materi')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent">
+                    <i class="fa-solid fa-graduation-cap w-5 text-center text-sm text-emerald-400"></i>
+                    <span>Materi Tutur</span>
+                </button>
+
+                <button id="nav-ngaraksa" onclick="switchTab('ngaraksa')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent">
+                    <i class="fa-solid fa-microscope w-5 text-center text-sm text-indigo-400"></i>
+                    <span>Uji Kontekstual Kalimat</span>
+                </button>
+
+                <button id="nav-peta-suara" onclick="switchTab('peta-suara')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent">
+                    <i class="fa-solid fa-map-location-dot w-5 text-center text-sm text-rose-400"></i>
+                    <span>Peta Suara Tutur</span>
+                </button>
+
+                <button id="nav-dangdut" onclick="switchTab('dangdut')" class="nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent">
+                    <i class="fa-solid fa-music w-5 text-center text-sm text-pink-400"></i>
+                    <span>Dangdut & Pantun</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="pt-4 border-t border-baduy-border/40 mt-4 space-y-3">
+            <div class="bg-baduy-navy/30 p-3 rounded-2xl border border-baduy-border/60">
+                <p class="text-[10px] text-slate-400 mb-0.5">Skor TRU Kamu:</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-amber-400 flex items-center gap-1">
+                        <i class="fa-solid fa-trophy text-xs"></i> <span id="userTRUScore">200</span> Pts
+                    </span>
+                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Duta Tutur</span>
+                </div>
+            </div>
+
+            <div class="bg-baduy-dark/60 p-2.5 rounded-xl text-[10px] text-slate-400 text-center border border-baduy-border/40">
+                Standar Bahasa TRU Banten:<br><strong class="text-slate-200">Tertib • Ramah • Unggul</strong>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 flex flex-col min-w-0 bg-baduy-dark overflow-y-auto">
+        
+        <!-- Top Header Bar -->
+        <header class="p-4 md:px-8 md:py-5 border-b border-baduy-border/50 flex flex-wrap items-center justify-between gap-4 sticky top-0 bg-baduy-dark/95 backdrop-blur-md z-30">
+            <div>
+                <h2 id="headerTitle" class="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+                    Bank Kata <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Ensiklopedia Kebahasaan</span>
+                </h2>
+                <p id="headerSubtitle" class="text-xs text-slate-400 mt-0.5">Kamus Kebahasaan Berbasis Konteks <strong class="text-amber-400 font-semibold">TRU (Tertib, Ramah, Unggul)</strong></p>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleAudioMute()" id="muteAudioBtn" class="px-3 py-1.5 rounded-2xl bg-baduy-card border border-baduy-border/60 text-xs font-semibold text-slate-300 hover:text-white hover:border-baduy-cyan/40 transition-all flex items-center space-x-1.5">
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-baduy-cyan"></i>
+                    <span id="muteText" class="hidden sm:inline">Suara On</span>
+                </button>
+
+                <button onclick="toggleFullscreen()" class="px-3 py-1.5 rounded-2xl bg-baduy-card border border-baduy-border/60 text-xs font-semibold text-slate-300 hover:text-white hover:border-baduy-cyan/40 transition-all flex items-center space-x-1.5">
+                    <i id="fullscreenIcon" class="fa-solid fa-expand text-baduy-cyan"></i>
+                    <span id="fullscreenText" class="hidden sm:inline">Layar Penuh</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="p-4 md:p-8 space-y-8 flex-1">
+
+            <!-- TAB 1: BANK KATA -->
+            <section id="tab-bank-kata" class="tab-content block space-y-8">
+                
+                <!-- Hero Banner Bank Kata -->
+                <div class="bg-gradient-to-r from-baduy-card via-amber-950/30 to-baduy-card p-6 md:p-8 rounded-3xl border border-amber-500/40 relative overflow-hidden shadow-2xl">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+                        <div class="space-y-3 max-w-2xl">
+                            <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30 inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-book-atlas"></i> KAMUS SOSIOLINGUISTIK & KONTEKSTUAL TUTUR
+                            </span>
+                            <h3 class="text-2xl md:text-3xl font-extrabold text-white leading-tight">
+                                Bank Kata & Frasa Berisiko Kebahasaan
+                            </h3>
+                            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                Jelajahi 100 entri diksi terdaftar dalam 5 tema utama: <strong class="text-amber-300">Tema 1 (Ejekan & Perendahan)</strong>, <strong class="text-pink-300">Tema 2 (Seksualisasi & Catcalling)</strong>, <strong class="text-purple-300">Tema 3 (Ungkapan Seksual & Pertanyaan Intim)</strong>, <strong class="text-rose-300">Tema 4 (Tutur Kasar & Toxic Digital)</strong>, dan <strong class="text-indigo-300">Tema 5 (Manipulasi, Stigma & Perundungan Verbal)</strong>.
+                            </p>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-3">
+                            <div class="text-center p-3 rounded-2xl bg-baduy-dark/80 border border-baduy-border/60">
+                                <span class="block text-2xl font-black text-amber-400">100</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Entri Lengkap</span>
+                            </div>
+                            <div class="text-center p-3 rounded-2xl bg-baduy-dark/80 border border-baduy-border/60">
+                                <span class="block text-2xl font-black text-baduy-cyan">5</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Tema Utama</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters Bar -->
+                <div class="bg-baduy-card p-5 rounded-2xl border border-baduy-border/80 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-6 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="bankSearchInput" onkeyup="filterBankKata()" placeholder="Cari entri kata (contoh: Baperan, Perawan, Body Count, Anjing, Spill Aib)..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-baduy-dark border border-baduy-border text-white text-xs placeholder-slate-500 focus:outline-none focus:border-baduy-cyan transition">
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <select id="bankCategoryFilter" onchange="filterBankKata()" class="w-full px-4 py-3 rounded-xl bg-baduy-dark border border-baduy-border text-slate-200 text-xs focus:outline-none focus:border-baduy-cyan transition">
+                                <option value="all">Semua Tema (100 Kata)</option>
+                                <option value="Tema 1">Tema 1: Ejekan & Perendahan (20)</option>
+                                <option value="Tema 2">Tema 2: Seksualisasi & Catcalling (20)</option>
+                                <option value="Tema 3">Tema 3: Ungkapan Seksual & Pertanyaan Intim (20)</option>
+                                <option value="Tema 4">Tema 4: Tutur Kasar & Toxic Digital (20)</option>
+                                <option value="Tema 5">Tema 5: Manipulasi, Stigma & Perundungan Verbal (20)</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <select id="bankStatusFilter" onchange="filterBankKata()" class="w-full px-4 py-3 rounded-xl bg-baduy-dark border border-baduy-border text-slate-200 text-xs focus:outline-none focus:border-baduy-cyan transition">
+                                <option value="all">Semua Status Etika</option>
+                                <option value="kontekstual">🟡 Kontekstual</option>
+                                <option value="bermasalah">🔴 Bermasalah</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-baduy-border/50 text-[11px]">
+                        <span class="text-slate-400 font-semibold mr-1">Pencarian Cepat:</span>
+                        <button onclick="quickSearchBank('Baperan')" class="px-2.5 py-1 rounded-lg bg-baduy-dark text-slate-300 hover:text-baduy-cyan hover:border-baduy-cyan/40 border border-baduy-border transition">#Baperan</button>
+                        <button onclick="quickSearchBank('Perawan')" class="px-2.5 py-1 rounded-lg bg-baduy-dark text-slate-300 hover:text-baduy-cyan hover:border-baduy-cyan/40 border border-baduy-border transition">#Perawan</button>
+                        <button onclick="quickSearchBank('Body Count')" class="px-2.5 py-1 rounded-lg bg-baduy-dark text-slate-300 hover:text-baduy-cyan hover:border-baduy-cyan/40 border border-baduy-border transition">#BodyCount</button>
+                        <button onclick="quickSearchBank('Anjing')" class="px-2.5 py-1 rounded-lg bg-baduy-dark text-slate-300 hover:text-baduy-cyan hover:border-baduy-cyan/40 border border-baduy-border transition">#Anjing</button>
+                        <button onclick="quickSearchBank('Spill')" class="px-2.5 py-1 rounded-lg bg-baduy-dark text-slate-300 hover:text-baduy-cyan hover:border-baduy-cyan/40 border border-baduy-border transition">#SpillAib</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                    <div>Menampilkan <span id="showingWordCount" class="font-bold text-amber-400">100</span> entri diksi</div>
+                    <div class="flex items-center space-x-3 text-[11px]">
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span>🟢 Aman (Medis/Edukasi/Deskriptif)</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> <span>🟡 Kontekstual</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span> <span>🔴 Bermasalah</span></span>
+                    </div>
+                </div>
+
+                <div id="bankKataGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </section>
+
+            <!-- TAB 2: GAME MILAH TUTUR -->
+            <section id="tab-milah" class="tab-content hidden space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-baduy-cyan/20 text-baduy-cyan text-[10px] font-bold border border-baduy-cyan/30 uppercase tracking-wider">
+                        <i class="fa-solid fa-gamepad"></i> Game Pengambilan Keputusan Berbasis Situasi
+                    </span>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-white">Milah Tutur TRU</h3>
+                    <p class="text-xs md:text-sm text-slate-300">
+                        Putar roda untuk memilih salah satu dari <strong>5 Tema Kebahasaan</strong>, hadapi situasi nyata kehidupan pelajar, pilihlah respons terbaik, bedah alasannya, dan terapkan tutur kata yang <strong class="text-emerald-400">Tertib, Ramah, dan Unggul (TRU)</strong>!
+                    </p>
+                    <div class="flex items-center justify-center gap-2 pt-1 text-[11px] font-bold text-slate-400">
+                        <span>MEMILAH</span> <i class="fa-solid fa-chevron-right text-[9px] text-baduy-cyan"></i>
+                        <span>MEMILIH</span> <i class="fa-solid fa-chevron-right text-[9px] text-baduy-cyan"></i>
+                        <span>MEMAHAMI</span> <i class="fa-solid fa-chevron-right text-[9px] text-baduy-cyan"></i>
+                        <span class="text-emerald-400">MEMPERBAIKI</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <!-- Wheel Section (5 cols) -->
+                    <div class="lg:col-span-5 bg-baduy-card p-6 rounded-3xl border border-baduy-border flex flex-col items-center justify-center space-y-6 shadow-2xl">
+                        <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center">
+                            <!-- Pointer Arrow -->
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[26px] border-t-amber-400 drop-shadow-lg"></div>
+                            
+                            <!-- Wheel Canvas -->
+                            <canvas id="wheelCanvas" width="320" height="320" class="w-full h-full rounded-full shadow-2xl transition-transform duration-[3500ms] ease-out"></canvas>
+                            
+                            <!-- Spin Center Button -->
+                            <button onclick="spinWheel()" id="spinBtn" class="absolute z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center border-4 border-baduy-dark">
+                                <span>PUTAR</span>
+                                <i class="fa-solid fa-arrows-spin text-xs mt-0.5"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-center space-y-2 w-full px-2">
+                            <p class="text-[11px] text-slate-400">Tekan tombol <strong class="text-amber-300">PUTAR</strong> untuk mengunduh 1 dari 5 Tema Utama</p>
+                            <div id="wheelCurrentThemeBadge" class="p-3 rounded-2xl bg-baduy-dark/90 border border-baduy-border min-h-[56px] flex items-center justify-center text-xs font-bold text-slate-300">
+                                🎡 Tekan "PUTAR" untuk mengocok tema situasi...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Situation & Options Section (7 cols) -->
+                    <div class="lg:col-span-7 bg-baduy-card p-6 md:p-8 rounded-3xl border border-baduy-border space-y-6 shadow-2xl">
+                        
+                        <!-- Header Status -->
+                        <div class="flex items-center justify-between border-b border-baduy-border pb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-2xl bg-baduy-cyan/20 border border-baduy-cyan/40 flex items-center justify-center text-baduy-cyan">
+                                    <i class="fa-solid fa-comments text-base"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-bold text-white">Simulasi & Pilihan Tuturan</h4>
+                                    <p class="text-[11px] text-slate-400" id="gameThemeLabel">Tema: Menunggu Putaran Roda</p>
+                                </div>
+                            </div>
+                            <span id="gameStatusBadge" class="px-3 py-1 rounded-full bg-baduy-dark text-slate-400 text-[10px] font-bold border border-baduy-border">Siap Memutar</span>
+                        </div>
+
+                        <!-- Scenario Card -->
+                        <div class="space-y-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-book-open"></i> SITUASI KEHIDUPAN PELAJAR:
+                            </span>
+                            <div id="gameScenarioBox" class="p-5 rounded-2xl bg-baduy-dark/90 border border-baduy-border text-slate-200 text-xs sm:text-sm leading-relaxed min-h-[90px] flex items-center justify-center text-center italic">
+                                "Silakan putar Roda Milah Tutur di sebelah kiri untuk menampilkan situasi percakapan."
+                            </div>
+                        </div>
+
+                        <!-- Options Container -->
+                        <div class="space-y-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check"></i> 3 PILIHAN TUTURAN RESPONS (PILIH SATU):
+                            </span>
+                            <div id="gameOptionsContainer" class="space-y-3">
+                                <p class="text-xs text-slate-500 text-center py-4">Pilihan tuturan akan muncul setelah roda berhenti berputar.</p>
+                            </div>
+                        </div>
+
+                        <!-- Analysis & Feedback Output (Bedah Tutur) -->
+                        <div id="gameFeedbackBox" class="hidden space-y-5 pt-4 border-t border-baduy-border">
+                            
+                            <!-- Score Evaluation Result Banner -->
+                            <div id="scoreBanner" class="p-4 rounded-2xl border flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div id="scoreIconBox" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold"></div>
+                                    <div>
+                                        <h5 id="scoreBannerTitle" class="text-sm font-extrabold"></h5>
+                                        <p id="scoreBannerSub" class="text-[11px] opacity-90"></p>
+                                    </div>
+                                </div>
+                                <div id="scoreBadgeDelta" class="text-lg font-black px-3 py-1 rounded-xl bg-black/30 border border-white/20"></div>
+                            </div>
+
+                            <!-- Bedah Tutur Section -->
+                            <div class="space-y-3">
+                                <h5 class="text-xs font-extrabold uppercase tracking-wider text-baduy-cyan flex items-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass font-bold"></i> BEDAH TUTUR 3 PILIHAN RESPONS:
+                                </h5>
+                                
+                                <div id="bedahTuturContainer" class="space-y-3">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Better TRU Response Box -->
+                            <div class="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-baduy-card to-emerald-950/40 border border-emerald-500/40 space-y-3 glow-emerald">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-lightbulb text-amber-300"></i> RESPONS TUTUR YANG LEBIH BAIK (TRU):
+                                    </span>
+                                    <button onclick="copyTRUSentence()" class="px-3 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 transition flex items-center gap-1">
+                                        <i class="fa-solid fa-copy"></i>
+                                        <span>Salin Kalimat TRU</span>
+                                    </button>
+                                </div>
+                                <p id="truResponseText" class="text-xs md:text-sm font-semibold text-white leading-relaxed italic bg-baduy-dark/60 p-3.5 rounded-xl border border-emerald-500/20">
+                                    ""
+                                </p>
+                            </div>
+
+                            <!-- Repeat/Next Spin Action Button -->
+                            <div class="pt-2 flex justify-end">
+                                <button onclick="spinWheel()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black text-xs hover:brightness-110 active:scale-95 transition shadow-lg shadow-amber-500/20 flex items-center space-x-2">
+                                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                                    <span>🔄 Putar Lagi (Tema / Situasi Baru)</span>
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: MATERI TUTUR TRU -->
+            <section id="tab-materi" class="tab-content hidden space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 uppercase tracking-wider">
+                        <i class="fa-solid fa-graduation-cap"></i> Modul Sosiolinguistik
+                    </span>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-white">Prinsip & Matriks Tutur TRU</h3>
+                    <p class="text-xs md:text-sm text-slate-300">
+                        Pedoman ilmiah dalam mengidentifikasi, memilah, dan merespons penggunaan bahasa di ruang publik luring maupun digital.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-baduy-card p-6 rounded-3xl border border-emerald-500/30 space-y-4 shadow-xl">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-extrabold text-xl">
+                            T
+                        </div>
+                        <h4 class="text-lg font-bold text-white">TERTIB</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Tertib menggunakan bahasa sesuai kaidah tata krama, konteks ruang, serta kedudukan kawan tutur. Menjaga lisan agar tidak melanggar batasan kesopanan dan hukum di ruang digital.
+                        </p>
+                    </div>
+
+                    <div class="bg-baduy-card p-6 rounded-3xl border border-amber-500/30 space-y-4 shadow-xl">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-extrabold text-xl">
+                            R
+                        </div>
+                        <h4 class="text-lg font-bold text-white">RAMAH</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Mengedepankan kehangatan empati, menghindari ucapan perendahan fisik (body shaming), invasif kehidupan pribadi, serta pelecehan/toxicity. Memperlakukan kawan tutur dengan rasa hormat.
+                        </p>
+                    </div>
+
+                    <div class="bg-baduy-card p-6 rounded-3xl border border-baduy-cyan/30 space-y-4 shadow-xl">
+                        <div class="w-12 h-12 rounded-2xl bg-baduy-cyan/20 border border-baduy-cyan/40 flex items-center justify-center text-baduy-cyan font-extrabold text-xl">
+                            U
+                        </div>
+                        <h4 class="text-lg font-bold text-white">UNGGUL</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Mencerminkan kecerdasan berbahasa yang solutif, persuasif, dan bermartabat. Mampu memberikan kritik/saran tanpa perlu menghina inteligensi, melabeli, atau mencemarkan privasi seseorang.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-baduy-card p-6 md:p-8 rounded-3xl border border-amber-500/30 space-y-6 shadow-2xl">
+                    <h4 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-amber-400"></i>
+                        <span>Pola Analisis Kebahasaan (5 Tema Utama)</span>
+                    </h4>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+                        <div class="p-5 rounded-2xl bg-baduy-dark/90 border border-amber-500/30 space-y-3">
+                            <span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30">TEMA 1 — EJEKAN & PENGHINAAN</span>
+                            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                                <li>• <strong class="text-white">[Fisik] + [Penghinaan]</strong>: <em>"Gendut banget", "Kurus kayak tiang"</em></li>
+                                <li>• <strong class="text-white">[Kemampuan] + [Makian]</strong>: <em>"Goblok banget", "Dasar tolol"</em></li>
+                                <li>• <strong class="text-white">[Penampilan] + [Perendahan]</strong>: <em>"Muka jelek", "Rambut kayak sapu"</em></li>
+                            </ul>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-baduy-dark/90 border border-pink-500/30 space-y-3">
+                            <span class="px-2.5 py-1 rounded-full bg-pink-500/20 text-pink-300 font-bold text-[10px] border border-pink-500/30">TEMA 2 — SEKSUALISASI & CATCALLING</span>
+                            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                                <li>• <strong class="text-white">[Bagian Tubuh] + [Penilaian Seksual]</strong>: <em>"Dada besar", "Paha bagus"</em></li>
+                                <li>• <strong class="text-white">[Sapaan] + [Ajakan/Permintaan]</strong>: <em>"Cantik, sini", "Sayang, ikut abang"</em></li>
+                                <li>• <strong class="text-white">[Tubuh] + [Metafora Makanan]</strong>: <em>"Badan pulen", "Pasti legit"</em></li>
+                            </ul>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-baduy-dark/90 border border-purple-500/30 space-y-3">
+                            <span class="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 font-bold text-[10px] border border-purple-500/30">TEMA 3 — SEKSUAL & PERTANYAAN INTIM</span>
+                            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                                <li>• <strong class="text-white">[Pertanyaan] + [Status Seksual]</strong>: <em>"Masih perawan nggak?"</em></li>
+                                <li>• <strong class="text-white">[Pertanyaan] + [Pengalaman Intim]</strong>: <em>"Pernah tidur sama pacar?"</em></li>
+                                <li>• <strong class="text-white">[Slang Seksual] + [Pertanyaan Personal]</strong>: <em>"Body count kamu berapa?"</em></li>
+                            </ul>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-baduy-dark/90 border border-rose-500/30 space-y-3">
+                            <span class="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-bold text-[10px] border border-rose-500/30">TEMA 4 — TUTUR KASAR & TOXIC DIGITAL</span>
+                            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                                <li>• <strong class="text-white">[Hewan/Makian] + [Serangan Pribadi]</strong>: <em>"Anjing kamu, nggak becus!"</em></li>
+                                <li>• <strong class="text-white">[Label Performa] + [Pengeluaran/Pengusiran]</strong>: <em>"Kamu cuma beban tim!"</em></li>
+                                <li>• <strong class="text-white">[Pencemaran/Provokasi] + [Aib Digital]</strong>: <em>"Spill aibnya biar dipermalukan"</em></li>
+                            </ul>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-baduy-dark/90 border border-indigo-500/30 space-y-3 md:col-span-2 lg:col-span-2">
+                            <span class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30">TEMA 5 — MANIPULASI, STIGMA & PERUNDUNGAN VERBAL</span>
+                            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                                <li>• <strong class="text-white">[Gaslighting/Invalidasi]</strong>: <em>"Kamu baperan banget", "Hanya halusinasi"</em></li>
+                                <li>• <strong class="text-white">[Menyalahkan Korban]</strong>: <em>"Makanya kalau pakai baju...", "Salah sendiri keluyuran"</em></li>
+                                <li>• <strong class="text-white">[Stigma/Perundungan Sosial]</strong>: <em>"Spill aibnya", "Serang akunnya ramai-ramai"</em></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-baduy-card p-6 md:p-8 rounded-3xl border border-baduy-border space-y-6 shadow-2xl">
+                    <h4 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table-list text-amber-400"></i>
+                        <span>Matriks Pemilahan Diksi Sosiolinguistik TRU</span>
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-baduy-dark text-amber-300 border-b border-baduy-border">
+                                <tr>
+                                    <th class="p-3.5">Kategori Analisis</th>
+                                    <th class="p-3.5">🟢 AMAN (NETRAL)</th>
+                                    <th class="p-3.5">🟡 KONTEKSTUAL</th>
+                                    <th class="p-3.5">🔴 BERMASALAH</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-baduy-border/60">
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">Objek Sasaran</td>
+                                    <td class="p-3.5 text-emerald-400">Benda mati, kuliner, teks medis, penelitian, jurnal ilmiah</td>
+                                    <td class="p-3.5 text-amber-400">Kerabat akrab dengan persetujuan bersama</td>
+                                    <td class="p-3.5 text-rose-400">Individu publik, teman main game, orang asing di ruang digital</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">Niat Komunikasi</td>
+                                    <td class="p-3.5 text-emerald-400">Informatif, medis, riset ilmiah, edukasi seksual formal</td>
+                                    <td class="p-3.5 text-amber-400">Candaan kawan dekat (potensi bias)</td>
+                                    <td class="p-3.5 text-rose-400">Menginvasi privasi, memaki, toxicity game, cyberbullying</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">Dampak Emosional</td>
+                                    <td class="p-3.5 text-emerald-400">Netral, edukatif, memperjelas pemahaman materi</td>
+                                    <td class="p-3.5 text-amber-400">Memerlukan konfirmasi kenyamanan kawan tutur</td>
+                                    <td class="p-3.5 text-rose-400">Trauma, pelecehan martabat, rasa terancam, isolasi sosial</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: SIMULASI TUTUR -->
+            <section id="tab-ngaraksa" class="tab-content hidden space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30 uppercase tracking-wider">
+                        <i class="fa-solid fa-microscope"></i> Engine Uji Kontekstual Kalimat
+                    </span>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-white">Uji Kontekstual Diksi TRU</h3>
+                    <p class="text-xs md:text-sm text-slate-300">
+                        Ketikkan kalimat yang ingin Anda periksa. Engine akan menganalisis konteks (medis/ilmiah vs personal/invasif), mendeteksi pola ujaran, dan menentukan indikator <strong class="text-emerald-400">🟢 Aman</strong>, <strong class="text-amber-400">🟡 Kontekstual</strong>, atau <strong class="text-rose-400">🔴 Bermasalah</strong>.
+                    </p>
+                </div>
+
+                <div class="max-w-3xl mx-auto bg-baduy-card p-6 md:p-8 rounded-3xl border border-baduy-border space-y-6 shadow-2xl">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-300">Kalimat / Ujaran yang Ingin Diuji:</label>
+                        <textarea id="simulasiInputText" rows="3" placeholder="Contoh: Baperan banget kamu, bercanda doang kok!... ATAU Kamu masih perawan nggak?... ATAU Anjing lu nggak becus main!" class="w-full p-4 rounded-2xl bg-baduy-dark border border-baduy-border text-white text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <span class="text-[11px] font-bold text-slate-400">Uji Cepat Contoh Kalimat Sesuai Aturan:</span>
+                        <div class="flex flex-wrap gap-2 text-[11px]">
+                            <button onclick="testSampleSentence('Materi ini membahas kesehatan seksual remaja.')" class="px-2.5 py-1 rounded-lg bg-baduy-dark hover:text-emerald-300 border border-baduy-border transition">🟢 "Kesehatan seksual remaja..."</button>
+                            <button onclick="testSampleSentence('Anjing adalah hewan mamalia pemakan daging.')" class="px-2.5 py-1 rounded-lg bg-baduy-dark hover:text-emerald-300 border border-baduy-border transition">🟢 "Anjing adalah hewan..."</button>
+                            <button onclick="testSampleSentence('Baperan banget kamu, bercanda doang kok!')" class="px-2.5 py-1 rounded-lg bg-baduy-dark hover:text-rose-300 border border-baduy-border transition">🔴 "Baperan banget..."</button>
+                            <button onclick="testSampleSentence('Salah sendiri keluyuran malam-malam!')" class="px-2.5 py-1 rounded-lg bg-baduy-dark hover:text-rose-300 border border-baduy-border transition">🔴 "Salah sendiri keluyuran..."</button>
+                            <button onclick="testSampleSentence('Spill aib pribadi dia biar dipermalukan.')" class="px-2.5 py-1 rounded-lg bg-baduy-dark hover:text-rose-300 border border-baduy-border transition">🔴 "Spill aibnya..."</button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button onclick="analyzeSentenceInput()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-baduy-cyan text-slate-950 font-bold text-xs hover:brightness-110 transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-microscope text-sm"></i>
+                            <span>Analisis Konteks Ujaran</span>
+                        </button>
+                    </div>
+
+                    <div id="simulasiAnalysisResult" class="hidden p-6 rounded-2xl bg-baduy-dark/90 border border-baduy-border space-y-4"></div>
+                </div>
+            </section>
+
+            <!-- TAB 5: PETA SUARA TUTUR (PEMBARUAN) -->
+            <section id="tab-peta-suara" class="tab-content hidden space-y-8">
+                <!-- Header Banner -->
+                <div class="text-center max-w-3xl mx-auto space-y-3">
+                    <span class="px-3.5 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-extrabold border border-rose-500/30 uppercase tracking-wider inline-flex items-center gap-1.5">
+                        <i class="fa-solid fa-map-location-dot"></i> PEMETAAN PARTISIPATIF LINGKUNGAN SEKOLAH
+                    </span>
+                    <h3 class="text-2xl md:text-3xl font-black text-white tracking-tight">Peta Suara Tutur</h3>
+                    <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                        Fitur partisipatif untuk memetakan seberapa sering siswa melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi tertentu di lingkungan sekolah.
+                    </p>
+                </div>
+
+                <!-- Banner Disclaimer & Flow Indicator -->
+                <div class="bg-baduy-card p-4 md:p-6 rounded-3xl border border-baduy-border space-y-4 shadow-xl">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-baduy-dark/80 p-3.5 rounded-2xl border border-baduy-border/60">
+                        <div class="flex items-center space-x-2.5 text-slate-300">
+                            <i class="fa-solid fa-shield-halved text-rose-400 text-base"></i>
+                            <span><strong>Privasi Terjaga:</strong> Peta Suara Tutur adalah alat pemetaan partisipatif, bukan alat diagnosis hukum atau penilaian terhadap individu. Hasil direkap secara agregat anonim.</span>
+                        </div>
+                        <span class="shrink-0 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                            🟢 Anonim & Agregat
+                        </span>
+                    </div>
+
+                    <!-- Visual Flow Track -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center pt-2">
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>1. PILIH SITUASI</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>2. PILIH LAMPU</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>3. DATA TERKUMPUL</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>4. REKAP</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>5. POLA TERLIHAT</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-baduy-dark border border-baduy-cyan/40 text-[10px] font-bold text-baduy-cyan flex items-center justify-center gap-1">
+                            <span>6. REFLEKSI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Situations & Voting Lights Grid -->
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-rose-400"></i>
+                            <span>5 Situasi Lingkungan Sekolah & Pilihan Suara Kamu</span>
+                        </h4>
+                        <span class="text-[11px] text-slate-400">Pilih lampu lalu lintas pada setiap situasi</span>
+                    </div>
+
+                    <div id="petaSituasiContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Situasi cards generated dynamically via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Aggregated Recapitulation Section -->
+                <div class="bg-baduy-card p-6 md:p-8 rounded-3xl border border-baduy-border space-y-6 shadow-2xl">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-baduy-border pb-4">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-pie"></i> REKAPITULASI DATA SEMENTARA
+                            </span>
+                            <h4 class="text-lg font-bold text-white">Hasil Agregat Suara & Warna Dominan</h4>
+                        </div>
+                        <div class="flex items-center space-x-2 text-[11px]">
+                            <button onclick="resetPetaSuaraData()" class="px-3 py-1.5 rounded-xl bg-baduy-dark text-slate-400 hover:text-rose-300 border border-baduy-border transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Atur Ulang Data Simulasi</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Aggregate Cards List -->
+                    <div id="rekapitulasiGrid" class="space-y-4">
+                        <!-- Populated dynamically via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Dynamic Conclusion & Reflection Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Kesimpulan Agregat -->
+                    <div class="lg:col-span-5 bg-gradient-to-br from-baduy-card via-rose-950/20 to-baduy-card p-6 rounded-3xl border border-rose-500/40 space-y-4 shadow-xl">
+                        <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold border border-rose-500/30 inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-bullhorn"></i> KESIMPULAN POLA AGREGAT
+                        </span>
+                        <h4 class="text-base font-bold text-white">Hasil Observasi Sementara</h4>
+                        <p id="petaKesimpulanText" class="text-xs md:text-sm text-slate-200 leading-relaxed italic bg-baduy-dark/80 p-4 rounded-2xl border border-rose-500/30 min-h-[100px] flex items-center justify-center">
+                            Memuat rekapitulasi data sementara...
+                        </p>
+                    </div>
+
+                    <!-- Refleksi: Apa yang Bisa Kita Lakukan? -->
+                    <div class="lg:col-span-7 bg-gradient-to-br from-baduy-card via-emerald-950/20 to-baduy-card p-6 md:p-8 rounded-3xl border border-emerald-500/40 space-y-5 shadow-xl glow-emerald">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl font-black">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-300">REFLEKSI AKSI</span>
+                                <h4 class="text-lg font-extrabold text-white">Apa yang Bisa Kita Lakukan?</h4>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Mari bersama-sama membangun ekosistem sekolah yang aman dan nyaman melalui penerapan tuturan <strong class="text-emerald-400">Tertib, Ramah, dan Unggul (TRU)</strong>:
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div class="p-3.5 rounded-2xl bg-baduy-dark/80 border border-emerald-500/30 space-y-1.5">
+                                <span class="font-extrabold text-emerald-400 block text-xs">1. TERTIB</span>
+                                <p class="text-[11px] text-slate-300 leading-relaxed">Saling mengingatkan dengan sopan saat candaan di lorong, lapangan, atau grup WhatsApp mulai melampaui batas.</p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-baduy-dark/80 border border-amber-500/30 space-y-1.5">
+                                <span class="font-extrabold text-amber-400 block text-xs">2. RAMAH</span>
+                                <p class="text-[11px] text-slate-300 leading-relaxed">Mengedepankan sapaan hangat, apresiasi, serta menghindari ejekan fisik dan pertanyaan invasif.</p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-baduy-dark/80 border border-baduy-cyan/30 space-y-1.5">
+                                <span class="font-extrabold text-baduy-cyan block text-xs">3. UNGGUL</span>
+                                <p class="text-[11px] text-slate-300 leading-relaxed">Menjadikan ruang kelas dan grup percakapan digital sebagai tempat saling mendukung dan menginspirasi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: DANGDUT & PANTUN -->
+            <section id="tab-dangdut" class="tab-content hidden space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30 uppercase tracking-wider">
+                        <i class="fa-solid fa-music"></i> Seni & Musik Edukasi
+                    </span>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-white">Pantun & Lirik Dangdut TRU</h3>
+                    <p class="text-xs md:text-sm text-slate-300">
+                        Ubah ejekan dan kata berisiko menjadi pantun bersajak indah serta lirik lagu edukatif bernuansa santun!
+                    </p>
+                </div>
+
+                <div class="max-w-2xl mx-auto bg-baduy-card p-6 md:p-8 rounded-3xl border border-baduy-border space-y-6 shadow-2xl text-center">
+                    <div class="w-16 h-16 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-400 flex items-center justify-center mx-auto text-2xl animate-bounce">
+                        <i class="fa-solid fa-drum"></i>
+                    </div>
+
+                    <div id="pantunDisplayBox" class="p-6 rounded-2xl bg-baduy-dark/90 border border-baduy-border space-y-3">
+                        <p class="text-xs text-amber-400 font-bold uppercase tracking-wider">PANTUN ETIKA TUTUR TRU</p>
+                        <p class="text-sm md:text-base font-semibold text-slate-200 leading-relaxed italic" id="pantunText">
+                            "Buah cempedak di luar pagar,<br>Tarik galah tolong jolokkan.<br>Bahasa indah enak didengar,<br>Tutur kata santun kita utamakan."
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <button onclick="generateRandomPantun()" class="px-5 py-2.5 rounded-xl bg-pink-500 text-white font-bold text-xs hover:bg-pink-400 transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-shuffle"></i>
+                            <span>Acak Pantun Edukasi</span>
+                        </button>
+                        <button onclick="playBeatSynth()" class="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Mainkan Ritme Dangdut TRU</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        let activeTab = 'bank-kata';
+        let userTRUScore = 200;
+        let isAudioMuted = false;
+
+        // Web Audio API Synthesizer
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'spin') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(174.61, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'vote') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                }
+            } catch (e) {
+                console.log("Audio play blocked");
+            }
+        }
+
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toastNotification');
+            const icon = document.getElementById('toastIcon');
+            const text = document.getElementById('toastMessage');
+
+            text.textContent = msg;
+            icon.innerHTML = isSuccess ? '<i class="fa-solid fa-circle-check text-emerald-400"></i>' : '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>';
+
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // =========================================================================
+        // FULL DATASET: BANK KATA (100 ENTRIES)
+        // =========================================================================
+        const BANK_KATA_DATA = [
+            // Tema 1 (20)
+            { id: 't1-1', term: 'GENDUT', category: 'Tema 1', subtheme: 'Ejekan Fisik', status: 'kontekstual', phonetic: '/gən.dut/', sampleSentence: 'Gendut banget kamu sekarang.', definition: 'Deskripsi ukuran fisik atau tubuh di atas rata-rata.', safeContext: '🟢 Digunakan untuk deskripsi medis netral/edukatif ("Dokter mencatat pasien mengalami kenaikan berat badan").', problemContext: '🔴 Bermasalah jika digunakan secara jelas untuk mengejek fisik ("Gendut banget kamu sekarang").', truAlternative: 'Hargai penampilan kawan tutur atau gunakan sapaan ramah tanpa mengomentari perubahan bentuk tubuh.' },
+            { id: 't1-2', term: 'GEMUK', category: 'Tema 1', subtheme: 'Ejekan Fisik', status: 'kontekstual', phonetic: '/gə.muk/', sampleSentence: 'Kok makin gemuk? Nggak malu?', definition: 'Merujuk pada bobot tubuh atau isi tubuh.', safeContext: '🟢 Digunakan dalam konteks kesehatan, peternakan, atau statistik pertumbuhan.', problemContext: '🔴 Bermasalah jika dipakai mempermalukan dan merendahkan martabat ("Kok makin gemuk? Nggak malu?").', truAlternative: 'Fokus pada kehangatan percakapan: "Senang sekali bisa bertemu denganmu lagi!"' },
+            { id: 't1-3', term: 'KURUS', category: 'Tema 1', subtheme: 'Ejekan Fisik', status: 'kontekstual', phonetic: '/ku.rus/', sampleSentence: 'Kurus banget, kayak tiang.', definition: 'Deskripsi tubuh dengan bobot kurang dari rata-rata.', safeContext: '🟢 Diagnosa nutrisi kesehatan atau pengamatan medis netral.', problemContext: '🔴 Bermasalah saat dijadikan olokan fisik [fisik + penghinaan] ("Kurus banget, kayak tiang").', truAlternative: 'Tanyakan kabar kesehatan secara umum: "Semoga selalu sehat dan dilancarkan urusannya."' },
+            { id: 't1-4', term: 'DEKIL', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'bermasalah', phonetic: '/de.kil/', sampleSentence: 'Ih, kamu dekil banget.', definition: 'Merujuk pada kondisi kotor atau tidak terawat.', safeContext: '🟢 Deskripsi benda mati atau barang bekas ("Kain lap ini sudah dekil").', problemContext: '🔴 Bermasalah jika ditujukan menyerang penampilan seseorang ("Ih, kamu dekil banget").', truAlternative: 'Sampaikan kepedulian secara empati: "Mari kita cuci tangan dan bersihkan diri dulu."' },
+            { id: 't1-5', term: 'HITAM', category: 'Tema 1', subtheme: 'Ejekan Pigmen', status: 'kontekstual', phonetic: '/hi.tam/', sampleSentence: 'Kok kulit kamu hitam banget?', definition: 'Warna spektrum paling gelap atau pigmen.', safeContext: '🟢 Deskripsi benda, pakaian, atau istilah ilmiah ("Pakaian warna hitam").', problemContext: '🔴 Bermasalah jika dipakai mencela warna kulit seseorang ("Kok kulit kamu hitam banget?").', truAlternative: 'Hargai keragaman fisik manusia tanpa membandingkan pigmen warna kulit.' },
+            { id: 't1-6', term: 'JELEK', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'bermasalah', phonetic: '/jə.lɛk/', sampleSentence: 'Muka kamu jelek banget.', definition: 'Penilaian estetika negatif.', safeContext: '🟢 Evaluasi mutu benda mati atau karya ("Kualitas jaringan internet kurang baik/jelek").', problemContext: '🔴 Bermasalah jika dipakai merendahkan rupa manusia ("Muka kamu jelek banget").', truAlternative: 'Apresiasi pribadi kawan tutur dengan tutur yang santun dan membangun.' },
+            { id: 't1-7', term: 'JERAWATAN', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'kontekstual', phonetic: '/jə.ra.wa.tan/', sampleSentence: 'Jerawatan banget, jijik lihatnya.', definition: 'Kondisi kulit mengalami inflamasi jerawat.', safeContext: '🟢 Konsultasi dermatologi atau perawatan kesehatan kulit.', problemContext: '🔴 Bermasalah jika diucapkan publik untuk mempermalukan ("Jerawatan banget, jijik lihatnya").', truAlternative: 'Hindari mengomentari kondisi medis kulit wajah orang lain di depan umum.' },
+            { id: 't1-8', term: 'PESEK', category: 'Tema 1', subtheme: 'Ejekan Anatomi', status: 'kontekstual', phonetic: '/pə.sɛk/', sampleSentence: 'Hidung kamu pesek banget.', definition: 'Bentuk anatomis hidung tidak berbatang tinggi.', safeContext: '🟢 Deskripsi anatomis ilmiah netral.', problemContext: '🔴 Bermasalah jika dipakai mengejek rupa ("Hidung kamu pesek banget").', truAlternative: 'Fokus pada keahlian dan kebaikan karakter kawan tutur.' },
+            { id: 't1-9', term: 'PENDEK', category: 'Tema 1', subtheme: 'Ejekan Postur', status: 'kontekstual', phonetic: '/pən.dɛk/', sampleSentence: 'Pendek banget, kayak anak SD.', definition: 'Dimensi ukuran vertikal terbatas.', safeContext: '🟢 Mengukur tinggi benda atau jarak ("Langkah ini pendek").', problemContext: '🔴 Bermasalah saat dipakai merendahkan tinggi badan ("Pendek banget, kayak anak SD").', truAlternative: 'Menghormati keragaman postur tubuh tanpa melabeli.' },
+            { id: 't1-10', term: 'BAU', category: 'Tema 1', subtheme: 'Perendahan Kebersihan', status: 'kontekstual', phonetic: '/ba.u/', sampleSentence: 'Bau badan kamu ganggu banget.', definition: 'Aroma atau getaran aroma penciuman.', safeContext: '🟢 Mengidentifikasi aroma benda atau lingkungan ("Ada bau asap").', problemContext: '🔴 Bermasalah jika dipergunakan mempermalukan secara publik ("Bau badan kamu ganggu banget").', truAlternative: 'Bicarakan secara tenang dan privat jika ada masalah kebersihan.' },
+            { id: 't1-11', term: 'KUSAM', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'kontekstual', phonetic: '/ku.sam/', sampleSentence: 'Kulit kamu kusam banget.', definition: 'Kondisi tidak bercahaya atau redup.', safeContext: '🟢 Menilai permukaan benda ("Lantai ini kusam").', problemContext: '🔴 Bermasalah jika dipakai mengomentari kulit orang ("Kulit kamu kusam banget").', truAlternative: 'Ungkapkan perhatian hangat: "Kamu tampak lelah, mari istirahat sejenak."' },
+            { id: 't1-12', term: 'TUA', category: 'Tema 1', subtheme: 'Ejekan Usia', status: 'kontekstual', phonetic: '/tu.a/', sampleSentence: 'Muka kamu tua banget buat umur segitu.', definition: 'Usia kronologis matang atau lanjut.', safeContext: '🟢 Deskripsi usia objek, pohon, atau catatan kronologis ("Gedung tua bersejarah").', problemContext: '🔴 Bermasalah jika dipakai merendahkan penampilan rupa ("Muka kamu tua banget buat umur segitu").', truAlternative: 'Sapa dengan gelar kehormatan santun (Bapak/Ibu/Mbak/Mas).' },
+            { id: 't1-13', term: 'CEBOL', category: 'Tema 1', subtheme: 'Ejekan Postur', status: 'bermasalah', phonetic: '/cə.bol/', sampleSentence: 'Dia cebol banget.', definition: 'Kata julukan merendahkan kondisi pertumbuhan fisik.', safeContext: '🟢 Pembahasan ilmiah medis mengenai kekerdilan/dwarfisme.', problemContext: '🔴 Bermasalah jika dijadikan makian melabeli orang ("Dia cebol banget").', truAlternative: 'Gunakan frasa medis sopan jika relevan atau hindari melabeli fisik.' },
+            { id: 't1-14', term: 'BUNCIT', category: 'Tema 1', subtheme: 'Ejekan Postur', status: 'kontekstual', phonetic: '/bun.cit/', sampleSentence: 'Perutmu buncit banget.', definition: 'Kondisi lingkar perut membesar.', safeContext: '🟢 Diskusi medis mengenai kesehatan lemak viseral.', problemContext: '🔴 Bermasalah ketika dijadikan bahan olokan di depan orang banyak ("Perutmu buncit banget").', truAlternative: 'Ajak berolahraga bersama tanpa mengkritik bentuk fisik.' },
+            { id: 't1-15', term: 'GIGI BERANTAKAN', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'kontekstual', phonetic: '/gi.gi bə.ran.ta.kan/', sampleSentence: 'Gigi kamu berantakan.', definition: 'Susunan ortodonti gigi tidak rata.', safeContext: '🟢 Diagnosa perawatan dokter gigi.', problemContext: '🔴 Bermasalah jika dipakai membatasi ekspresi lawan tutur.', truAlternative: 'Beri kenyamanan agar kawan tutur merasa aman dan bebas tersenyum.' },
+            { id: 't1-16', term: 'RAMBUT SEPERTI SAPU', category: 'Tema 1', subtheme: 'Perendahan Rupa', status: 'bermasalah', phonetic: '/ram.but sə.pər.ti sa.pu/', sampleSentence: 'Rambut kamu kayak sapu.', definition: 'Kiasan ejekan untuk tekstur rambut.', safeContext: '🟢 Hampir tidak ada konteks netral untuk manusia.', problemContext: '🔴 Bermasalah karena merendahkan penampilan fisik.', truAlternative: 'Apresiasi gaya rambut lawan tutur secara positif.' },
+            { id: 't1-17', term: 'BODOH', category: 'Tema 1', subtheme: 'Penghinaan Inteligensi', status: 'bermasalah', phonetic: '/bo.doh/', sampleSentence: 'Kamu bodoh banget.', definition: 'Makian merendahkan tingkat kecerdasan.', safeContext: '🟢 Analisis ilmiah fenomena kebodohan.', problemContext: '🔴 Bermasalah jika dipakai memaki kekhilafan.', truAlternative: 'Gunakan tutur ramah & solutif: "Mari kita pelajari bersama bagian yang sulit."' },
+            { id: 't1-18', term: 'TOLOL', category: 'Tema 1', subtheme: 'Penghinaan Inteligensi', status: 'bermasalah', phonetic: '/to.lol/', sampleSentence: 'Dasar tolol!', definition: 'Umpatan kasar melabeli inteligensi.', safeContext: '🟢 Kajian linguistik pembahasan diksi umpatan.', problemContext: '🔴 Bermasalah karena menyerang harkat martabat.', truAlternative: 'Sampaikan evaluasi dengan tenang: "Lain kali tolong lebih berhati-hati ya."' },
+            { id: 't1-19', term: 'GOBLOK', category: 'Tema 1', subtheme: 'Penghinaan Inteligensi', status: 'bermasalah', phonetic: '/go.blok/', sampleSentence: 'Goblok banget kamu.', definition: 'Makian kasar menyerang kemampuan.', safeContext: '🟢 Pembahasan sosiolinguistik.', problemContext: '🔴 Bermasalah jika dilontarkan dalam pergaulan/game.', truAlternative: 'Beri evaluasi adem: "Tetap semangat, yuk diperbaiki strateginya."' },
+            { id: 't1-20', term: 'TIDAK BERGUNA', category: 'Tema 1', subtheme: 'Perendahan Eksistensi', status: 'bermasalah', phonetic: '/ti.dak bər.gu.na/', sampleSentence: 'Kamu tidak berguna.', definition: 'Frasa perendahan eksistensi/kontribusi.', safeContext: '🟢 Merujuk pada barang/alat mati yang rusak.', problemContext: '🔴 Bermasalah jika dipakai mematikan peran seseorang.', truAlternative: 'Arahkan dengan koordinasi baik: "Kamu bisa bantu memegang bagian tugas ini ya."' },
+
+            // Tema 2 (20)
+            { id: 't2-1', term: 'CANTIK', category: 'Tema 2', subtheme: 'Catcalling', status: 'kontekstual', phonetic: '/can.tik/', sampleSentence: 'Ssst, cantik, sini dong.', definition: 'Pujian estetika keindahan.', safeContext: '🟢 Aman jika diucapkan tulus/netral.', problemContext: '🔴 Bermasalah jika dipakai catcalling/sapaan ajakan.', truAlternative: 'Gunakan sapaan sopan formal universal seperti "Permisi, Mbak/Ibu."' },
+            { id: 't2-2', term: 'SAYANG', category: 'Tema 2', subtheme: 'Catcalling', status: 'kontekstual', phonetic: '/sa.yaŋ/', sampleSentence: 'Eh sayang, ikut abang yuk.', definition: 'Sapaan kehangatan atau ungkapan penyesalan.', safeContext: '🟢 Aman dalam konteks pasangan resmi/keluarga.', problemContext: '🔴 Bermasalah jika dipakai menggoda orang tak dikenal.', truAlternative: 'Gunakan panggilan nama atau sapaan formal santun.' },
+            { id: 't2-3', term: 'MANIS', category: 'Tema 2', subtheme: 'Catcalling', status: 'kontekstual', phonetic: '/ma.nis/', sampleSentence: 'Cewek manis, sini dong.', definition: 'Rasa gula atau kesan menyenangkan.', safeContext: '🟢 Aman untuk menilai rasa makanan.', problemContext: '🔴 Bermasalah saat dipakai menggoda/catcalling.', truAlternative: 'Berikan rasa hormat tanpa melakukan intimidasi verbal.' },
+            { id: 't2-4', term: 'SEKSI', category: 'Tema 2', subtheme: 'Objektifikasi Visual', status: 'kontekstual', phonetic: '/sɛk.si/', sampleSentence: 'Kamu seksi banget.', definition: 'Daya tarik penampilan sensual.', safeContext: '🟢 Diskusi busana fashion internal.', problemContext: '🔴 Bermasalah saat diucapkan tanpa konsen.', truAlternative: 'Puji secara profesional: "Pakaianmu sangat rapi dan serasi."' },
+            { id: 't2-5', term: 'BODY GOALS', category: 'Tema 2', subtheme: 'Objektifikasi Visual', status: 'kontekstual', phonetic: '/bo.di gols/', sampleSentence: 'Body goals banget.', definition: 'Istilah proporsi tubuh ideal.', safeContext: '🟢 Komunitas kebugaran/fitness konsensual.', problemContext: '🔴 Bermasalah jika mengarah objektifikasi visual publik.', truAlternative: 'Apresiasi kedisiplinan berolahraga: "Kamu terlihat sangat bugar dan sehat."' },
+            { id: 't2-6', term: 'MONTOK', category: 'Tema 2', subtheme: 'Objektifikasi Tubuh', status: 'bermasalah', phonetic: '/mon.tok/', sampleSentence: 'Dia montok banget.', definition: 'Diksi merujuk pada kelebatan bentuk tubuh.', safeContext: '🟢 Istilah peternakan ("Hewan ternak ini montok").', problemContext: '🔴 Bermasalah jika ditujukan seksualisasi manusia.', truAlternative: 'Hindari menilai atau mengomentari lekuk tubuh orang lain.' },
+            { id: 't2-7', term: 'SEMOK', category: 'Tema 2', subtheme: 'Objektifikasi Tubuh', status: 'bermasalah', phonetic: '/sə.mok/', sampleSentence: 'Perempuan itu semok banget.', definition: 'Istilah gaul berkonotasi objektifikasi tubuh.', safeContext: '🟢 Hampir tidak ada konteks netral di ruang publik.', problemContext: '🔴 Bermasalah karena termasuk pelecehan verbal.', truAlternative: 'Gunakan tutur kata beretika yang menghargai martabat sesama.' },
+            { id: 't2-8', term: 'PAHA', category: 'Tema 2', subtheme: 'Seksualisasi Organ', status: 'kontekstual', phonetic: '/pa.ha/', sampleSentence: 'Paha kamu bagus banget.', definition: 'Bagian anatomi kaki antara pinggul dan lutut.', safeContext: '🟢 Aman dalam pelajaran anatomi, medis, atau kuliner.', problemContext: '🔴 Bermasalah jika dipakai menilai tubuh seksual.', truAlternative: 'Batasi pembicaraan pada hal netral profesional.' },
+            { id: 't2-9', term: 'DADA', category: 'Tema 2', subtheme: 'Seksualisasi Organ', status: 'kontekstual', phonetic: '/da.da/', sampleSentence: 'Kenapa dada kamu besar banget?', definition: 'Bagian anatomi tubuh depan.', safeContext: '🟢 Medis, olahraga, atau salam perpisahan.', problemContext: '🔴 Bermasalah jika mengomentari organ intim.', truAlternative: 'Jaga kesopanan dengan tidak menanyakan hal pribadi sensitif.' },
+            { id: 't2-10', term: 'BIBIR', category: 'Tema 2', subtheme: 'Seksualisasi Organ', status: 'kontekstual', phonetic: '/bi.bir/', sampleSentence: 'Bibir kamu menggoda.', definition: 'Organ mulut luar.', safeContext: '🟢 Analisis kecantikan makeup atau diagnosa medis.', problemContext: '🔴 Bermasalah saat diberi penilaian sugestif.', truAlternative: 'Fokus pada topik diskusi tanpa menilai organ tubuh secara sugestif.' },
+            { id: 't2-11', term: 'BADAN', category: 'Tema 2', subtheme: 'Objektifikasi Visual', status: 'kontekstual', phonetic: '/ba.dan/', sampleSentence: 'Badan kamu bagus banget.', definition: 'Fisik keseluruhan manusia atau lembaga.', safeContext: '🟢 Istilah organisasi atau kesehatan.', problemContext: '🔴 Bermasalah jika mengarah objektifikasi visual.', truAlternative: 'Hargai lawan tutur sebagai pribadi utuh bermartabat.' },
+            { id: 't2-12', term: 'PINGGANG', category: 'Tema 2', subtheme: 'Seksualisasi Organ', status: 'kontekstual', phonetic: '/piŋ.gaŋ/', sampleSentence: 'Pinggang kamu kecil banget.', definition: 'Bagian tubuh di atas pinggul.', safeContext: '🟢 Penjahit busana atau keluhan medis.', problemContext: '🔴 Bermasalah jika diucapkan menggoda.', truAlternative: 'Bicarakan topik umum yang membuat kawan tutur nyaman.' },
+            { id: 't2-13', term: 'LEGIT', category: 'Tema 2', subtheme: 'Metafora Tubuh Makanan', status: 'kontekstual', phonetic: '/lə.git/', sampleSentence: 'Badannya pasti legit.', definition: 'Manis lezat (kuliner) atau sah/autentik.', safeContext: '🟢 Kuliner atau keabsahan data.', problemContext: '🔴 Bermasalah jika dipakai metafora makanan untuk tubuh.', truAlternative: 'Gunakan kata legit khusus untuk hidangan kuliner atau keabsahan berita.' },
+            { id: 't2-14', term: 'EMPUK', category: 'Tema 2', subtheme: 'Metafora Tubuh Makanan', status: 'kontekstual', phonetic: '/əm.puk/', sampleSentence: 'Kelihatannya empuk banget.', definition: 'Tekstur lembut tidak keras.', safeContext: '🟢 Tempat duduk, kasur, atau kuliner.', problemContext: '🔴 Bermasalah jika ditujukan mengomentari fisik.', truAlternative: 'Gunakan kata empuk sesuai peruntukan benda mati.' },
+            { id: 't2-15', term: 'PULEN', category: 'Tema 2', subtheme: 'Metafora Tubuh Makanan', status: 'kontekstual', phonetic: '/pu.lən/', sampleSentence: 'Badannya pulen banget.', definition: 'Tekstur nasi kelembutan pas.', safeContext: '🟢 Deskripsi kuliner nasi.', problemContext: '🔴 Bermasalah jika dipakai menganalogikan tubuh wanita.', truAlternative: 'Gunakan istilah makanan hanya khusus untuk hidangan kuliner.' },
+            { id: 't2-16', term: 'CICIP', category: 'Tema 2', subtheme: 'Metafora Tubuh Makanan', status: 'kontekstual', phonetic: '/ci.cip/', sampleSentence: 'Tinggal cicip saja.', definition: 'Kegiatan mencicipi makanan.', safeContext: '🟢 Tawaran hidangan kuliner.', problemContext: '🔴 Bermasalah jika ditujukan mengeksploitasi manusia.', truAlternative: 'Hormati batasan fisik dan martabat sesama manusia.' },
+            { id: 't2-17', term: 'GOYANG', category: 'Tema 2', subtheme: 'Seksualisasi Tarian', status: 'kontekstual', phonetic: '/go.yaŋ/', sampleSentence: 'Mau digoyang?', definition: 'Gerakan berayun atau tarian.', safeContext: '🟢 Seni tari, musik, atau gerakan getar.', problemContext: '🔴 Bermasalah saat diucapkan sebagai bisikan/goda asusila.', truAlternative: 'Jaga etika berkomunikasi dengan tutur kata bersih.' },
+            { id: 't2-18', term: 'TOBRUT', category: 'Tema 2', subtheme: 'Objektifikasi Vulgar', status: 'bermasalah', phonetic: '/to.brut/', sampleSentence: 'Tobrut banget cewek itu.', definition: 'Akronim gaul vulgar objektifikasi organ dada.', safeContext: '🟢 Tidak ada konteks aman. Bentuk pelecehan verbal.', problemContext: '🔴 Bermasalah dalam segala percakapan/komentar.', truAlternative: 'Hentikan penggunaan frasa ini sepenuhnya demi menghormati wanita.' },
+            { id: 't2-19', term: 'NOMOR', category: 'Tema 2', subtheme: 'Catcalling Invasi', status: 'kontekstual', phonetic: '/no.mor/', sampleSentence: 'Nomornya dong, cantik.', definition: 'Angka atau identitas kontak.', safeContext: '🟢 Administrasi atau kontak resmi.', problemContext: '🔴 Bermasalah saat mendesak meminta kontak disertai godaan.', truAlternative: 'Minta kontak secara sopan dan profesional jika ada keperluan jelas.' },
+            { id: 't2-20', term: 'IKUT', category: 'Tema 2', subtheme: 'Catcalling Invasi', status: 'kontekstual', phonetic: '/i.kut/', sampleSentence: 'Ikut abang yuk, cantik.', definition: 'Menyertai atau bergabung kegiatan.', safeContext: '🟢 Ajakan kegiatan bersama.', problemContext: '🔴 Bermasalah saat memaksa orang asing di jalan.', truAlternative: 'Gunakan ajakan terbuka yang menghormati privasi orang lain.' },
+
+            // Tema 3 (20)
+            { id: 't3-1', term: 'PERAWAN', category: 'Tema 3', subtheme: 'Pertanyaan Status Intim', status: 'kontekstual', phonetic: '/pə.ra.wan/', sampleSentence: 'Kamu masih perawan nggak?', definition: 'Status biologis/reproduksi wanita.', safeContext: '🟢 Diskusi modul reproduksi medis atau teks sosiologi formal.', problemContext: '🔴 Bermasalah saat ditanyakan secara pribadi.', truAlternative: 'Hormati ranah privasi orang lain dengan tidak menanyakan status intimasinya.' },
+            { id: 't3-2', term: 'PERJAKA', category: 'Tema 3', subtheme: 'Pertanyaan Status Intim', status: 'kontekstual', phonetic: '/pər.ja.ka/', sampleSentence: 'Kamu masih perjaka?', definition: 'Status biologis pria.', safeContext: '🟢 Kajian ilmiah sosiologi atau edukasi biologis.', problemContext: '🔴 Bermasalah jika ditanyakan sebagai bahan godaan/candaan.', truAlternative: 'Fokus pada topik diskusi umum tanpa mengikis batasan privasi.' },
+            { id: 't3-3', term: 'SEKS', category: 'Tema 3', subtheme: 'Invasi Privasi Reproduksi', status: 'kontekstual', phonetic: '/sɛks/', sampleSentence: 'Kamu sudah pernah seks?', definition: 'Aktivitas reproduksi biologis.', safeContext: '🟢 Edukasi kesehatan formal.', problemContext: '🔴 Bermasalah jika ditanyakan ke ranah pribadi kawan tutur.', truAlternative: 'Gunakan istilah seks dalam konteks akademik/medis resmi.' },
+            { id: 't3-4', term: 'BEGITUAN', category: 'Tema 3', subtheme: 'Eufemisme Invasif', status: 'kontekstual', phonetic: '/bə.gi.tu.an/', sampleSentence: 'Pernah melakukan begituan?', definition: 'Kata ganti eufemisme gaul merujuk hubungan intim.', safeContext: '🟢 Percakapan netral merujuk aktivitas acak benda.', problemContext: '🔴 Bermasalah jika dipakai menginterogasi aktivitas intim.', truAlternative: 'Hindari pertanyaan eufemisme invasif yang membuat kawan tutur risih.' },
+            { id: 't3-5', term: 'TIDUR SAMA', category: 'Tema 3', subtheme: 'Interogasi Pengalaman Intim', status: 'kontekstual', phonetic: '/ti.dur sa.ma/', sampleSentence: 'Pernah tidur sama pacar?', definition: 'Frasa berkonotasi hubungan intim.', safeContext: '🟢 Deskripsi anak kecil tidur bersama orang tua.', problemContext: '🔴 Bermasalah jika dipakai mengorek ranah pribadi.', truAlternative: 'Jaga batas kesopanan dengan tidak mencampuri urusan intim.' },
+            { id: 't3-6', term: 'RANJANG', category: 'Tema 3', subtheme: 'Asumsi Performa Intim', status: 'kontekstual', phonetic: '/ran.jaŋ/', sampleSentence: 'Pasti jago di ranjang.', definition: 'Tempat tidur atau kiasan performa.', safeContext: '🟢 Penjualan furnitur rumah tangga.', problemContext: '🔴 Bermasalah saat dijadikan penilaian sugestif.', truAlternative: 'Puji kemampuan akademik/profesional kawan tutur secara bermartabat.' },
+            { id: 't3-7', term: 'PENGALAMAN PERTAMA', category: 'Tema 3', subtheme: 'Interogasi Pengalaman Intim', status: 'kontekstual', phonetic: '/pə.ŋa.la.man pər.ta.ma/', sampleSentence: 'Ceritain pengalaman pertama kamu.', definition: 'Momen awal melakukan kegiatan.', safeContext: '🟢 Pengalaman hari pertama kerja atau sekolah.', problemContext: '🔴 Bermasalah jika mendesak menceritakan pengalaman intim.', truAlternative: 'Arahkan topik pada pengalaman profesional atau hobi menarik.' },
+            { id: 't3-8', term: 'UKURAN BRA', category: 'Tema 3', subtheme: 'Invasi Ukuran Busana Intim', status: 'kontekstual', phonetic: '/u.ku.ran bra/', sampleSentence: 'Ukuran bra kamu berapa?', definition: 'Dimensi spesifik pakaian dalam.', safeContext: '🟢 Transaksi pembelian busana pribadi.', problemContext: '🔴 Bermasalah jika ditanyakan publik untuk menggoda.', truAlternative: 'Hindari pertanyaan mengenai ukuran busana intim kawan tutur.' },
+            { id: 't3-9', term: 'UKURAN', category: 'Tema 3', subtheme: 'Invasi Ukuran Organ', status: 'kontekstual', phonetic: '/u.ku.ran/', sampleSentence: 'Ukuran itunya berapa?', definition: 'Dimensi besaran objek fisik.', safeContext: '🟢 Mengukur dimensi sepatu atau baju.', problemContext: '🔴 Bermasalah jika berkonotasi mesum menginterogasi organ sensitif.', truAlternative: 'Gunakan pertanyaan ukuran khusus untuk spesifikasi benda teknis.' },
+            { id: 't3-10', term: 'TELANJANG', category: 'Tema 3', subtheme: 'Eksploitasi Gambar Intim', status: 'kontekstual', phonetic: '/tə.lan.jaŋ/', sampleSentence: 'Berani telanjang di kamera?', definition: 'Kondisi tanpa busana.', safeContext: '🟢 Istilah hukum ("Mata telanjang") atau sains medis.', problemContext: '🔴 Bermasalah jika digunakan mendesak konten asusila.', truAlternative: 'Jaga etika digital dan lindungi privasi serta keamanan diri.' },
+            { id: 't3-11', term: 'MANDI BARENG', category: 'Tema 3', subtheme: 'Interogasi Pengalaman Intim', status: 'kontekstual', phonetic: '/man.di ba.rəŋ/', sampleSentence: 'Pernah mandi bareng pacar?', definition: 'Aktivitas membersihkan diri bersama.', safeContext: '🟢 Kenangan balita mandi bersama saudara kandung.', problemContext: '🔴 Bermasalah jika ditanyakan mengimajinasikan hal privat.', truAlternative: 'Bicarakan topik hiburan atau hobi umum yang menyenangkan.' },
+            { id: 't3-12', term: 'CIUMAN', category: 'Tema 3', subtheme: 'Interogasi Riwayat Asmara', status: 'kontekstual', phonetic: '/ciu.man/', sampleSentence: 'Sudah pernah ciuman sama siapa?', definition: 'Ungkapan kasih sayang menyentuhkan bibir.', safeContext: '🟢 Ungkapan kasih sayang ibu kepada balita.', problemContext: '🔴 Bermasalah jika dipakai menginterogasi riwayat romansa.', truAlternative: 'Hormati batas riwayat asmara kawan tutur tanpa kepo berlebihan.' },
+            { id: 't3-13', term: 'BODY COUNT', category: 'Tema 3', subtheme: 'Slang Rekam Seksual', status: 'kontekstual', phonetic: '/bo.di kaunt/', sampleSentence: 'Body count kamu berapa?', definition: 'Slang jumlah pasangan seksual.', safeContext: '🟢 Istilah analisis kriminologi terkait angka korban bencana.', problemContext: '🔴 Bermasalah jika dipakai menghakimi riwayat hubungan.', truAlternative: 'Menghargai martabat seseorang tanpa melabeli riwayat masa lalu.' },
+            { id: 't3-14', term: 'ONS', category: 'Tema 3', subtheme: 'Interogasi Gaya Hidup Seksual', status: 'kontekstual', phonetic: '/o ɛn ɛs/', sampleSentence: 'Kamu pernah ONS?', definition: 'Akronim One Night Stand.', safeContext: '🟢 Kajian riset sosiologi gaya hidup urban.', problemContext: '🔴 Bermasalah jika dipakai menuduh atau menginterogasi privasi.', truAlternative: 'Fokus pada topik diskusi akademik tanpa menyerang karakter.' },
+            { id: 't3-15', term: 'FWB', category: 'Tema 3', subtheme: 'Interogasi Gaya Hidup Seksual', status: 'kontekstual', phonetic: '/ɛf da.bəl.ju bi/', sampleSentence: 'Kamu punya FWB?', definition: 'Akronim Friends With Benefits.', safeContext: '🟢 Pembahasan sosiologis dinamika hubungan modern.', problemContext: '🔴 Bermasalah saat dipakai menyudutkan atau menawar relasi.', truAlternative: 'Membangun pertemanan yang sehat, jujur, dan beretika.' },
+            { id: 't3-16', term: 'OPEN BO', category: 'Tema 3', subtheme: 'Tuduhan Prostitusi', status: 'kontekstual', phonetic: '/o.pən bi o/', sampleSentence: 'Dia dituduh open BO.', definition: 'Slang transaksi layanan prostitusi online.', safeContext: '🟢 Pembahasan penegakan hukum dan kejahatan siber.', problemContext: '🔴 Bermasalah jika dipakai memfitnah/mencemarkan nama baik.', truAlternative: 'Jangan menyebarkan tuduhan atau fitnah tidak berdasar.' },
+            { id: 't3-17', term: 'PMO', category: 'Tema 3', subtheme: 'Invasi Kebiasaan Personal', status: 'kontekstual', phonetic: '/pi ɛm o/', sampleSentence: 'Masih sering PMO?', definition: 'Akronim Porn, Masturbation, Orgasm.', safeContext: '🟢 Diskusi medis kecanduan pornografi dan konseling.', problemContext: '🔴 Bermasalah jika dipakai mempermalukan kebiasaan pribadi.', truAlternative: 'Bila ingin membantu kawan, gunakan pendekatan privat yang empati.' },
+            { id: 't3-18', term: 'HORNY', category: 'Tema 3', subtheme: 'Pelecehan Verbal Sugestif', status: 'kontekstual', phonetic: '/hor.ni/', sampleSentence: 'Kamu lagi horny?', definition: 'Slang kondisi gairah seksual.', safeContext: '🟢 Diskusi psikologi medis internal konsensual.', problemContext: '🔴 Bermasalah jika diucapkan tiba-tiba kepada kawan tutur.', truAlternative: 'Menjaga obrolan tetap bersih dan sopan di ruang publik.' },
+            { id: 't3-19', term: 'LIAR', category: 'Tema 3', subtheme: 'Pelabelan Seksual', status: 'kontekstual', phonetic: '/li.ar/', sampleSentence: 'Kamu kelihatannya liar.', definition: 'Sifat tidak terikat aturan atau stereotip seksual.', safeContext: '🟢 Deskripsi satwa di alam bebas.', problemContext: '🔴 Bermasalah jika dipakai memberikan pelabelan seksual.', truAlternative: 'Hargai karakter kawan tutur tanpa membuat asumsi/stereotip.' },
+            { id: 't3-20', term: 'NAFSU', category: 'Tema 3', subtheme: 'Tudingan Gairah Intim', status: 'kontekstual', phonetic: '/naf.su/', sampleSentence: 'Gampang naik nafsu, ya.', definition: 'Dorongan emosi kuat.', safeContext: '🟢 Selera makan atau dorongan semangat.', problemContext: '🔴 Bermasalah jika dipakai menuding gairah intim seseorang.', truAlternative: 'Gunakan kata nafsu dalam konteks positif seperti "Nafsu belajar".' },
+
+            // Tema 4 (20)
+            { id: 't4-1', term: 'ANJING', category: 'Tema 4', subtheme: 'Umpatan Makian', status: 'kontekstual', phonetic: '/an.jiŋ/', sampleSentence: 'Anjing kamu, nggak becus!', definition: 'Nama hewan atau makian kasar.', safeContext: '🟢 Deskripsi ilmiah/zoologi hewan.', problemContext: '🔴 Bermasalah jika ditujukan memaki orang lain.', truAlternative: 'Gunakan luapan emosi terkontrol tanpa mengumpat nama hewan.' },
+            { id: 't4-2', term: 'BABI', category: 'Tema 4', subtheme: 'Umpatan Makian', status: 'kontekstual', phonetic: '/ba.bi/', sampleSentence: 'Muka lu kayak babi!', definition: 'Nama hewan ternak suidae atau umpatan.', safeContext: '🟢 Pembahasan biologi atau peternakan.', problemContext: '🔴 Bermasalah jika dipakai mengejek rupa dan martabat.', truAlternative: 'Sampaikan kritik atau pendapat dengan bahasa yang santun.' },
+            { id: 't4-3', term: 'BANGSAT', category: 'Tema 4', subtheme: 'Umpatan Kasar', status: 'bermasalah', phonetic: '/baŋ.sat/', sampleSentence: 'Dasar bangsat!', definition: 'Kutu busuk atau umpatan kasar penuh amarah.', safeContext: '🟢 Istilah entomologi biologi merujuk pada kutu busuk.', problemContext: '🔴 Bermasalah jika dilontarkan meluapkan amarah kasar.', truAlternative: 'Ungkapkan kekecewaan dengan tenang: "Saya sangat kecewa."' },
+            { id: 't4-4', term: 'BAJINGAN', category: 'Tema 4', subtheme: 'Umpatan Kasar', status: 'bermasalah', phonetic: '/ba.ji.ŋan/', sampleSentence: 'Bajingan kamu!', definition: 'Penarik gerobak sapi (sejarah) atau umpatan.', safeContext: '🟢 Kajian sejarah kearifan lokal profesi masa lalu.', problemContext: '🔴 Bermasalah jika digunakan menyerang integritas seseorang.', truAlternative: 'Sampaikan fakta keberatan secara hukum atau dialog baik-baik.' },
+            { id: 't4-5', term: 'KONTOL', category: 'Tema 4', subtheme: 'Umpatan Vulgar', status: 'bermasalah', phonetic: '/kon.tol/', sampleSentence: 'Mainnya kontol banget!', definition: 'Umpatan kasar vulgar organ kelamin pria.', safeContext: '🟢 Istilah nama daerah/toponimi lokal kuno.', problemContext: '🔴 Bermasalah saat dijadikan makian kasar digital/game.', truAlternative: 'Hindari umpatan organ intim. Gunakan kata "Kurang maksimal".' },
+            { id: 't4-6', term: 'MEMEK', category: 'Tema 4', subtheme: 'Umpatan Vulgar', status: 'bermasalah', phonetic: '/mə.mɛk/', sampleSentence: 'Bacot memek lu!', definition: 'Kuliner tradisional Aceh atau umpatan organ wanita.', safeContext: '🟢 Diskusi kuliner warisan budaya takbenda Aceh.', problemContext: '🔴 Bermasalah jika dipakai mengumpat kasar.', truAlternative: 'Hargai kawan tutur dengan tidak melontarkan makian vulgar.' },
+            { id: 't4-7', term: 'BITCH', category: 'Tema 4', subtheme: 'Umpatan Asing', status: 'bermasalah', phonetic: '/bic/', sampleSentence: 'Dasar bitch!', definition: 'Umpatan bahasa Inggris merendahkan wanita.', safeContext: '🟢 Kajian istilah bahasa asing dalam sosiolinguistik.', problemContext: '🔴 Bermasalah saat digunakan melabeli wanita secara kasar.', truAlternative: 'Gunakan panggilan yang sopan dan hargai sesama.' },
+            { id: 't4-8', term: 'FUCK', category: 'Tema 4', subtheme: 'Umpatan Asing', status: 'bermasalah', phonetic: '/fak/', sampleSentence: 'Fuck you!', definition: 'Umpatan kasar berbahasa Inggris.', safeContext: '🟢 Pembahasan karya literatur film sosiolinguistik.', problemContext: '🔴 Bermasalah saat diucapkan menyerang kawan tutur.', truAlternative: 'Jaga emosi digital dan utamakan tutur kata adem.' },
+            { id: 't4-9', term: 'NOOB', category: 'Tema 4', subtheme: 'Toxic Gaming', status: 'kontekstual', phonetic: '/nub/', sampleSentence: 'Noob banget kamu!', definition: 'Slang pemula dalam dunia permainan gim.', safeContext: '🟢 Deskripsi diri sendiri ("Saya masih noob di gim ini").', problemContext: '🔴 Bermasalah jika dijadikan ejekan toksik mengusir pemain.', truAlternative: 'Beri bimbingan pada pemula: "Sini saya bantu beri tipsnya."' },
+            { id: 't4-10', term: 'BEBAN', category: 'Tema 4', subtheme: 'Toxic Gaming', status: 'kontekstual', phonetic: '/bə.ban/', sampleSentence: 'Kamu cuma beban tim!', definition: 'Muatan berat atau kiasan penghambat tim.', safeContext: '🟢 Analisis beban fisik atau beban anggaran keuangan.', problemContext: '🔴 Bermasalah jika dipakai meruntuhkan mental rekan tim.', truAlternative: 'Beri dorongan semangat: "Ayo koordinasi lagi, kita pasti bisa!"' },
+            { id: 't4-11', term: 'TROLL', category: 'Tema 4', subtheme: 'Toxic Gaming', status: 'kontekstual', phonetic: '/trol/', sampleSentence: 'Dasar troll AFK!', definition: 'Makhluk mitologi atau perusak jalannya gim.', safeContext: '🟢 Tokoh fiksi dongeng atau analisis perilaku siber.', problemContext: '🔴 Bermasalah jika dipakai melabeli lawan bicara dengan amarah.', truAlternative: 'Fokus pada strategi permainan tanpa memicu permusuhan.' },
+            { id: 't4-12', term: 'KAMPUNGAN', category: 'Tema 4', subtheme: 'Perendahan Latar Belakang', status: 'bermasalah', phonetic: '/kam.pu.ŋan/', sampleSentence: 'Dasar norak kampungan!', definition: 'Sebutan perendahan latar belakang daerah/selera.', safeContext: '🟢 Merujuk pada nuansa keasrian pedesaan yang alami.', problemContext: '🔴 Bermasalah jika dipakai merendahkan selera seseorang.', truAlternative: 'Hargai keanekaragaman latar belakang dan selera setiap individu.' },
+            { id: 't4-13', term: 'MISKIN', category: 'Tema 4', subtheme: 'Perendahan Finansial', status: 'kontekstual', phonetic: '/mis.kin/', sampleSentence: 'Top up dong, dasar miskin!', definition: 'Kondisi keterbatasan ekonomi finansial.', safeContext: '🟢 Program bantuan sosial atau statistik ekonomi.', problemContext: '🔴 Bermasalah jika dipakai mengejek status finansial di gim.', truAlternative: 'Hormati kondisi sosial ekonomi kawan tutur tanpa mengejek.' },
+            { id: 't4-14', term: 'PLAGIAT', category: 'Tema 4', subtheme: 'Tuduhan Digital', status: 'kontekstual', phonetic: '/pla.gi.at/', sampleSentence: 'Karya kamu plagiat punya orang!', definition: 'Penjiplakan karya tanpa izin.', safeContext: '🟢 Evaluasi akademik resmi dengan bukti plagiarisme.', problemContext: '🔴 Bermasalah jika dituduhkan publik tanpa bukti otentik.', truAlternative: 'Sampaikan masukan secara santun melalui jalur diskusi privat.' },
+            { id: 't4-15', term: 'SPILL AIB', category: 'Tema 4', subtheme: 'Provokasi Digital', status: 'bermasalah', phonetic: '/spil a.ib/', sampleSentence: 'Spill aibnya biar dipermalukan!', definition: 'Ancaman menyebarkan rahasia/keburukan di sosmed.', safeContext: '🟢 Kajian etika perlindungan privasi digital.', problemContext: '🔴 Bermasalah karena termasuk perundungan siber (cyberbullying).', truAlternative: 'Selesaikan perselisihan secara bijak tanpa mengumbar privasi.' },
+            { id: 't4-16', term: 'SERANG AKUNNYA', category: 'Tema 4', subtheme: 'Provokasi Cyberbullying', status: 'bermasalah', phonetic: '/sə.raŋ a.kun.nya/', sampleSentence: 'Serang akunnya ramai-ramai!', definition: 'Ajakan melakukan pengeroyokan komentar jahat.', safeContext: '🟢 Edukasi bahaya perundungan siber massa.', problemContext: '🔴 Bermasalah karena memobilisasi perundungan digital.', truAlternative: 'Gunakan fitur laporkan (report) platform jika ada pelanggaran.' },
+            { id: 't4-17', term: 'MAMPUS', category: 'Tema 4', subtheme: 'Umpatan Kegagalan', status: 'bermasalah', phonetic: '/mam.pus/', sampleSentence: 'Mampus lu, rasain akibatnya!', definition: 'Umpatan kepuasan atas musibah/kegagalan orang.', safeContext: '🟢 Bahasa sastranya mati (merujuk pada hama/serangga).', problemContext: '🔴 Bermasalah jika diucapkan mendoakan keburukan kawan.', truAlternative: 'Gunakan tutur berempati: "Semoga masalah ini cepat selesai."' },
+            { id: 't4-18', term: 'BACOT', category: 'Tema 4', subtheme: 'Umpatan Penutupan Bicara', status: 'bermasalah', phonetic: '/ba.cot/', sampleSentence: 'Banyak bacot kamu!', definition: 'Slang merendahkan perkataan kawan tutur.', safeContext: '🟢 Kajian perkembangan bahasa gaul urban.', problemContext: '🔴 Bermasalah saat dipakai membungkam hak bicara kawan.', truAlternative: 'Sampaikan santun: "Mohon izin, mari kita bicara bergantian."' },
+            { id: 't4-19', term: 'UNINSTALL', category: 'Tema 4', subtheme: 'Pengusiran Komunitas', status: 'kontekstual', phonetic: '/an.in.stol/', sampleSentence: 'Uninstall aja game kamu!', definition: 'Menghapus aplikasi software dari perangkat.', safeContext: '🟢 Tutorial teknis penghematan memori penyimpanan HP.', problemContext: '🔴 Bermasalah jika dipakai merendahkan kemampuan pemain.', truAlternative: 'Beri dorongan positif: "Terus berlatih ya agar makin jago."' },
+            { id: 't4-20', term: 'DELETE AKUN', category: 'Tema 4', subtheme: 'Pengusiran Komunitas', status: 'kontekstual', phonetic: '/di.lit a.kun/', sampleSentence: 'Mending delete akun kamu!', definition: 'Tindakan menghapus profil akun medsos.', safeContext: '🟢 Panduan keamanan privasi data pribadi.', problemContext: '🔴 Bermasalah jika diucapkan mengintimidasi pengguna.', truAlternative: 'Hargai hak keberadaan setiap orang di media sosial.' },
+
+            // Tema 5 (20)
+            { id: 't5-1', term: 'BAPERAN', category: 'Tema 5', subtheme: 'Gaslighting', status: 'kontekstual', phonetic: '/ba.pə.ran/', sampleSentence: 'Baperan banget kamu, bercanda doang!', definition: 'Singkatan bawa perasaan atau mudah tersinggung.', safeContext: '🟢 Evaluasi psikologis mandiri terkait tingkat sensitivitas emosi.', problemContext: '🔴 Bermasalah jika dipakai memvalidasi ejekan [gaslighting] ("Baperan banget kamu, bercanda doang!").', truAlternative: 'Akui dan hormati perasaan kawan tutur: "Maaf ya jika candaanku berlebihan."' },
+            { id: 't5-2', term: 'ALAY', category: 'Tema 5', subtheme: 'Stigmatisasi Gaya', status: 'bermasalah', phonetic: '/a.lay/', sampleSentence: 'Gaya kamu alay banget.', definition: 'Slang merendahkan gaya/ekspresi seseorang.', safeContext: '🟢 Kajian tren subkultur remaja abad 21.', problemContext: '🔴 Bermasalah saat digunakan menghina selera atau gaya orang.', truAlternative: 'Hargai kebebasan berekspresi kawan tutur yang unik.' },
+            { id: 't5-3', term: 'NORAK', category: 'Tema 5', subtheme: 'Stigmatisasi Gaya', status: 'bermasalah', phonetic: '/no.rak/', sampleSentence: 'Baju kamu norak banget.', definition: 'Sebutan merendahkan estetika penampilan.', safeContext: '🟢 Kajian istilah gaul sosiolinguistik.', problemContext: '🔴 Bermasalah jika dipakai mempermalukan busana kawan.', truAlternative: 'Apresiasi keberanian kawan tutur dalam memilih gaya busana.' },
+            { id: 't5-4', term: 'HALU', category: 'Tema 5', subtheme: 'Gaslighting', status: 'kontekstual', phonetic: '/ha.lu/', sampleSentence: 'Jangan halu deh kamu!', definition: 'Singkatan halusinasi atau daya khayal berlebihan.', safeContext: '🟢 Istilah medis psikiatri merujuk pada gangguan persepsi.', problemContext: '🔴 Bermasalah jika dipakai meremehkan cita-cita seseorang.', truAlternative: 'Dukung impian kawan tutur: "Impian yang luar biasa, ayo wujudkan!"' },
+            { id: 't5-5', term: 'DRAMA', category: 'Tema 5', subtheme: 'Gaslighting', status: 'kontekstual', phonetic: '/dra.ma/', sampleSentence: 'Hidup kamu penuh drama banget!', definition: 'Karya seni pertunjukan atau kejadian berbelit.', safeContext: '🟢 Pementasan seni teater atau sastra lakon.', problemContext: '🔴 Bermasalah jika dipakai mengabaikan masalah kawan.', truAlternative: 'Dengarkan keluhan teman dengan penuh rasa empati.' },
+            { id: 't5-6', term: 'LEBAY', category: 'Tema 5', subtheme: 'Gaslighting', status: 'kontekstual', phonetic: '/lə.bay/', sampleSentence: 'Reaksi kamu lebay banget!', definition: 'Sikap atau repons berlebih-lebihan.', safeContext: '🟢 Kajian gaya ekspresi kebahasaan humor.', problemContext: '🔴 Bermasalah saat dipakai meremehkan respon emosi jujur.', truAlternative: 'Pahami kondisi perasaan kawan tutur tanpa menghakimi.' },
+            { id: 't5-7', term: 'SALAH SENDIRI', category: 'Tema 5', subtheme: 'Victim Blaming', status: 'bermasalah', phonetic: '/sa.lah sen.di.ri/', sampleSentence: 'Salah sendiri keluyuran malam-malam!', definition: 'Frasa menyalahkan korban atas musibah yang dialami.', safeContext: '🟢 Evaluasi kesalahan teknis yang diakui sendiri.', problemContext: '🔴 Bermasalah karena merujuk pada victim blaming.', truAlternative: 'Tunjukkan kepedulian: "Saya prihatin, ada yang bisa saya bantu?"' },
+            { id: 't5-8', term: 'MAKANYA', category: 'Tema 5', subtheme: 'Victim Blaming', status: 'kontekstual', phonetic: '/ma.ka.nya/', sampleSentence: 'Makanya kalau pakai baju disesuaikan!', definition: 'Kata hubung akibat yang sering dipakai memojokkan.', safeContext: '🟢 Penjelasan sebab-akibat pembelajaran logika.', problemContext: '🔴 Bermasalah jika dipakai memojokkan korban insiden.', truAlternative: 'Dukung korban terlebih dahulu tanpa langsung menghakimi.' },
+            { id: 't5-9', term: 'PANSOS', category: 'Tema 5', subtheme: 'Stigmatisasi Niat', status: 'kontekstual', phonetic: '/pan.sos/', sampleSentence: 'Kamu cuma mau pansos kan?', definition: 'Singkatan panjat sosial untuk mencari popularitas.', safeContext: '🟢 Kajian sosiologi fenomena dinamika konten media sosial.', problemContext: '🔴 Bermasalah jika dipakai menuduh niat baik seseorang.', truAlternative: 'Apresiasi karya kawan tutur tanpa menuduh niat tersembunyi.' },
+            { id: 't5-10', term: 'PICK ME', category: 'Tema 5', subtheme: 'Stigmatisasi Karakter', status: 'kontekstual', phonetic: '/pik mi/', sampleSentence: 'Dasar cewek pick me!', definition: 'Slang melabeli orang yang mencari validasi lawan jenis.', safeContext: '🟢 Pembahasan tren psikologi populer di media sosial.', problemContext: '🔴 Bermasalah jika dipakai melabeli dan merendahkan kawan.', truAlternative: 'Hargai keunikan sifat lawan tutur tanpa memberi label negatif.' },
+            { id: 't5-11', term: 'CEWEK KUA-KUA', category: 'Tema 5', subtheme: 'Stigmatisasi Gender', status: 'bermasalah', phonetic: '/ce.wek ku.a ku.a/', sampleSentence: 'Dasar cewek kua-kua!', definition: 'Slang pelecehan merendahkan kemandirian wanita.', safeContext: '🟢 Kajian sosiolinguistik pembahasan stereotip gender.', problemContext: '🔴 Bermasalah karena merendahkan harkat wanita.', truAlternative: 'Gunakan tutur santun yang menghargai kesetaraan dan martabat.' },
+            { id: 't5-12', term: 'SOTOY', category: 'Tema 5', subtheme: 'Perendahan Pendapat', status: 'bermasalah', phonetic: '/so.toy/', sampleSentence: 'Jangan sotoy kamu!', definition: 'Slang merasa paling tahu atau sok tahu.', safeContext: '🟢 Percakapan santai kawan dekat yang saling paham.', problemContext: '🔴 Bermasalah jika dipakai mematikan argumen diskusi.', truAlternative: 'Sampaikan koreksi dengan data: "Setahu saya informasinya..."' },
+            { id: 't5-13', term: 'SOK CANTIK', category: 'Tema 5', subtheme: 'Perendahan Percaya Diri', status: 'bermasalah', phonetic: '/sok can.tik/', sampleSentence: 'Gak usah sok cantik deh!', definition: 'Ungkapan menjatuhkan rasa percaya diri seseorang.', safeContext: '🟢 Hampir tidak ada konteks netral.', problemContext: '🔴 Bermasalah karena menyerang rasa percaya diri kawan.', truAlternative: 'Beri ruang bagi setiap orang untuk tampil percaya diri.' },
+            { id: 't5-14', term: 'SOK JAGOAN', category: 'Tema 5', subtheme: 'Perendahan Kemampuan', status: 'bermasalah', phonetic: '/sok ja.go.an/', sampleSentence: 'Nggak usah sok jagoan di sini!', definition: 'Ungkapan meremehkan kepemimpinan seseorang.', safeContext: '🟢 Teks narasi fiksi drama tokoh komik.', problemContext: '🔴 Bermasalah jika dipakai meremehkan usaha teman.', truAlternative: 'Dukung keberanian teman dalam memimpin atau berinisiatif.' },
+            { id: 't5-15', term: 'CARI PERHATIAN', category: 'Tema 5', subtheme: 'Stigmatisasi Niat', status: 'kontekstual', phonetic: '/ca.ri pər.ha.ti.an/', sampleSentence: 'Kamu cuma cari perhatian saja!', definition: 'Tudingan bersikap demi menarik perhatian publik.', safeContext: '🟢 Analisis psikologi tumbuh kembang anak usia dini.', problemContext: '🔴 Bermasalah jika dipakai mengabaikan kebutuhan bantuan kawan.', truAlternative: 'Tanyakan secara empati: "Ada yang sedang kamu butuhkan?"' },
+            { id: 't5-16', term: 'SENSI', category: 'Tema 5', subtheme: 'Gaslighting', status: 'kontekstual', phonetic: '/sɛn.si/', sampleSentence: 'Gak usah sensi gitu dong!', definition: 'Slang sensitif atau mudah tersinggung.', safeContext: '🟢 Istilah kepekaan alat ukur atau indra medis.', problemContext: '🔴 Bermasalah jika dipakai mengabaikan batas kenyamanan orang.', truAlternative: 'Hargai batas emosi dan tingkat kenyamanan kawan tutur.' },
+            { id: 't5-17', term: 'DIAM AJA', category: 'Tema 5', subtheme: 'Pembungkaman Hak', status: 'bermasalah', phonetic: '/di.am a.ja/', sampleSentence: 'Kamu diam aja, gak usah ikut campur!', definition: 'Perintah membungkam hak berpendapat seseorang.', safeContext: '🟢 Instruksi ketenangan di perpustakaan/ruang ujian.', problemContext: '🔴 Bermasalah jika dipakai mematikan hak bicara kawan.', truAlternative: 'Buka diskusi: "Mari kita dengarkan pendapatnya bersama."' },
+            { id: 't5-18', term: 'ANAK MAMAH', category: 'Tema 5', subtheme: 'Ejekan Kemandirian', status: 'bermasalah', phonetic: '/a.nak ma.mah/', sampleSentence: 'Dasar anak mamah, dikit-dikit lapor!', definition: 'Ejekan merendahkan kedekatan dengan keluarga.', safeContext: '🟢 Sebutan hubungan kasih sayang anak dan ibu.', problemContext: '🔴 Bermasalah jika dipakai mengejek batasan keselamatan kawan.', truAlternative: 'Apresiasi sikap berani melapor jika ada tindakan perundungan.' },
+            { id: 't5-19', term: 'MUKA DUA', category: 'Tema 5', subtheme: 'Penghinaan Karakter', status: 'bermasalah', phonetic: '/mu.ka du.a/', sampleSentence: 'Kamu itu emang muka dua!', definition: 'Label tidak jujur atau khianat.', safeContext: '🟢 Kajian sastra kiasan peribahasa.', problemContext: '🔴 Bermasalah jika dituduhkan publik tanpa bukti.', truAlternative: 'Bicarakan secara jujur dan empat mata jika ada salah paham.' },
+            { id: 't5-20', term: 'ANAK HARAM', category: 'Tema 5', subtheme: 'Penghinaan Latar Belakang', status: 'bermasalah', phonetic: '/a.nak ha.ram/', sampleSentence: 'Dasar anak haram!', definition: 'Umpatan kasar merendahkan status kelahiran.', safeContext: '🟢 Kajian sosiologi pembahasan stigma anak di luar nikah.', problemContext: '🔴 Bermasalah saat digunakan menghina martabat kawan.', truAlternative: 'Hormati harkat dan martabat setiap manusia tanpa stigma.' }
+        ];
+
+        // =========================================================================
+        // PETA SUARA TUTUR DATASET & LOGIC
+        // =========================================================================
+        const PETA_SITUASI_DATA = [
+            {
+                id: 'sit-1',
+                title: 'Bermain di Lorong Kelas',
+                icon: 'fa-archway',
+                description: 'Saat siswa bermain, bercanda, atau berkumpul di lorong kelas.',
+                question: '“Seberapa sering kamu melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi ini?”'
+            },
+            {
+                id: 'sit-2',
+                title: 'Belajar di Perpustakaan',
+                icon: 'fa-book-reader',
+                description: 'Saat siswa membaca, belajar, mengerjakan tugas, atau berdiskusi di perpustakaan.',
+                question: '“Seberapa sering kamu melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi ini?”'
+            },
+            {
+                id: 'sit-3',
+                title: 'Berinteraksi di Kelas',
+                icon: 'fa-chalkboard-user',
+                description: 'Saat siswa belajar, menyampaikan pendapat, menjawab pertanyaan, atau berinteraksi dengan guru dan teman.',
+                question: '“Seberapa sering kamu melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi ini?”'
+            },
+            {
+                id: 'sit-4',
+                title: 'Berolahraga di Lapangan',
+                icon: 'fa-futbol',
+                description: 'Saat siswa berolahraga, bermain, berlatih, atau berinteraksi di lapangan sekolah.',
+                question: '“Seberapa sering kamu melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi ini?”'
+            },
+            {
+                id: 'sit-5',
+                title: 'Berdiskusi di Grup WhatsApp',
+                icon: 'fa-comments',
+                description: 'Saat siswa berkomunikasi dalam grup WhatsApp kelas mengenai tugas, kegiatan, informasi, atau percakapan sehari-hari.',
+                question: '“Seberapa sering kamu melihat atau mengalami tuturan yang mengejek, merendahkan, membuat tidak nyaman, atau mengandung pelecehan verbal dalam situasi ini?”'
+            }
+        ];
+
+        // Aggregate voting state (Initial default aggregate representation)
+        let petaVotes = {
+            'sit-1': { sering: 24, kadang: 16, jarang: 10 }, // Lorong
+            'sit-2': { sering: 6,  kadang: 14, jarang: 30 }, // Perpustakaan
+            'sit-3': { sering: 18, kadang: 22, jarang: 10 }, // Kelas
+            'sit-4': { sering: 20, kadang: 18, jarang: 12 }, // Lapangan
+            'sit-5': { sering: 32, kadang: 12, jarang: 6 }   // WA Group
+        };
+
+        // User choices for local session feedback
+        let userPetaChoices = {};
+
+        function renderPetaSuara() {
+            const container = document.getElementById('petaSituasiContainer');
+            if (!container) return;
+
+            container.innerHTML = PETA_SITUASI_DATA.map((sit, idx) => {
+                const userChoice = userPetaChoices[sit.id];
+                return `
+                    <div class="bg-baduy-card p-5 rounded-3xl border border-baduy-border/80 flex flex-col justify-between space-y-4 shadow-xl hover:border-baduy-cyan/40 transition relative overflow-hidden">
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-sm shrink-0">
+                                    <i class="fa-solid ${sit.icon}"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Situasi ${idx + 1}</span>
+                                    <h5 class="font-extrabold text-white text-sm">${sit.title}</h5>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-300 leading-relaxed italic bg-baduy-dark/60 p-2.5 rounded-xl border border-baduy-border/40">
+                                "${sit.description}"
+                            </p>
+                        </div>
+
+                        <div class="space-y-3 pt-2 border-t border-baduy-border/40">
+                            <p class="text-[11px] font-bold text-amber-300 leading-tight">
+                                ${sit.question}
+                            </p>
+
+                            <!-- Traffic Lights Selection Buttons -->
+                            <div class="grid grid-cols-3 gap-2 pt-1">
+                                <button onclick="votePetaSuara('${sit.id}', 'sering')" class="p-2.5 rounded-2xl border transition-all flex flex-col items-center justify-center text-center group ${userChoice === 'sering' ? 'bg-rose-500/30 border-rose-500 text-white glow-rose ring-2 ring-rose-400' : 'bg-baduy-dark/90 border-baduy-border text-slate-300 hover:bg-rose-950/40 hover:border-rose-500/50'}">
+                                    <div class="w-6 h-6 rounded-full bg-rose-500 border-2 border-rose-300 flex items-center justify-center text-[10px] text-white shadow-md mb-1 group-hover:scale-110 transition">
+                                        🔴
+                                    </div>
+                                    <span class="text-[10px] font-black tracking-tight">SERING</span>
+                                </button>
+
+                                <button onclick="votePetaSuara('${sit.id}', 'kadang')" class="p-2.5 rounded-2xl border transition-all flex flex-col items-center justify-center text-center group ${userChoice === 'kadang' ? 'bg-amber-500/30 border-amber-500 text-white glow-amber ring-2 ring-amber-400' : 'bg-baduy-dark/90 border-baduy-border text-slate-300 hover:bg-amber-950/40 hover:border-amber-500/50'}">
+                                    <div class="w-6 h-6 rounded-full bg-amber-500 border-2 border-amber-300 flex items-center justify-center text-[10px] text-slate-950 shadow-md mb-1 group-hover:scale-110 transition">
+                                        🟡
+                                    </div>
+                                    <span class="text-[9px] font-black tracking-tight leading-none">KADANG-KADANG</span>
+                                </button>
+
+                                <button onclick="votePetaSuara('${sit.id}', 'jarang')" class="p-2.5 rounded-2xl border transition-all flex flex-col items-center justify-center text-center group ${userChoice === 'jarang' ? 'bg-emerald-500/30 border-emerald-500 text-white glow-emerald ring-2 ring-emerald-400' : 'bg-baduy-dark/90 border-baduy-border text-slate-300 hover:bg-emerald-950/40 hover:border-emerald-500/50'}">
+                                    <div class="w-6 h-6 rounded-full bg-emerald-500 border-2 border-emerald-300 flex items-center justify-center text-[10px] text-white shadow-md mb-1 group-hover:scale-110 transition">
+                                        🟢
+                                    </div>
+                                    <span class="text-[9px] font-black tracking-tight leading-none">JARANG / TIDAK PERNAH</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderRekapitulasi();
+        }
+
+        function votePetaSuara(situasiId, option) {
+            const previous = userPetaChoices[situasiId];
+            if (previous) {
+                petaVotes[situasiId][previous] = Math.max(0, petaVotes[situasiId][previous] - 1);
+            }
+
+            userPetaChoices[situasiId] = option;
+            petaVotes[situasiId][option] += 1;
+
+            playSound('vote');
+            showToast(`Suara kamu dicatat untuk ${PETA_SITUASI_DATA.find(s=>s.id===situasiId).title}!`);
+            renderPetaSuara();
+        }
+
+        function renderRekapitulasi() {
+            const container = document.getElementById('rekapitulasiGrid');
+            if (!container) return;
+
+            let maxSeringCount = -1;
+            let maxSeringSituasi = '';
+
+            container.innerHTML = PETA_SITUASI_DATA.map((sit, idx) => {
+                const votes = petaVotes[sit.id];
+                const total = votes.sering + votes.kadang + votes.jarang || 1;
+
+                const pSering = Math.round((votes.sering / total) * 100);
+                const pKadang = Math.round((votes.kadang / total) * 100);
+                const pJarang = 100 - pSering - pKadang;
+
+                // Track situation with highest 'Sering' ratio
+                if (votes.sering / total > maxSeringCount) {
+                    maxSeringCount = votes.sering / total;
+                    maxSeringSituasi = sit.title;
+                }
+
+                // Determine dominant light
+                let dominantBadge = '';
+                if (pSering >= pKadang && pSering >= pJarang) {
+                    dominantBadge = '<span class="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-black">🔴 DOMINAN: SERING</span>';
+                } else if (pKadang >= pSering && pKadang >= pJarang) {
+                    dominantBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black">🟡 DOMINAN: KADANG-KADANG</span>';
+                } else {
+                    dominantBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black">🟢 DOMINAN: JARANG / TIDAK PERNAH</span>';
+                }
+
+                return `
+                    <div class="p-4 rounded-2xl bg-baduy-dark/90 border border-baduy-border/80 space-y-3">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-400">#${idx + 1}</span>
+                                <h5 class="font-extrabold text-white text-xs sm:text-sm">${sit.title}</h5>
+                            </div>
+                            <div>${dominantBadge}</div>
+                        </div>
+
+                        <!-- Percentage Bar Display -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-[11px] font-bold">
+                                <span class="text-rose-400 flex items-center gap-1">🔴 SERING ${pSering}%</span>
+                                <span class="text-amber-400 flex items-center gap-1">🟡 KADANG ${pKadang}%</span>
+                                <span class="text-emerald-400 flex items-center gap-1">🟢 JARANG / TIDAK PERNAH ${pJarang}%</span>
+                            </div>
+
+                            <div class="w-full h-3.5 bg-baduy-card rounded-full overflow-hidden flex border border-baduy-border/60">
+                                <div style="width: ${pSering}%" class="bg-rose-500 h-full transition-all duration-500" title="Sering: ${pSering}%"></div>
+                                <div style="width: ${pKadang}%" class="bg-amber-500 h-full transition-all duration-500" title="Kadang: ${pKadang}%"></div>
+                                <div style="width: ${pJarang}%" class="bg-emerald-500 h-full transition-all duration-500" title="Jarang: ${pJarang}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Update Conclusion Text
+            const kesimpulanBox = document.getElementById('petaKesimpulanText');
+            if (kesimpulanBox) {
+                kesimpulanBox.innerHTML = `"Berdasarkan respons sementara, <strong class="text-rose-300 underline font-black">${maxSeringSituasi}</strong> menjadi situasi dengan proporsi jawaban <strong class="text-rose-400">'Sering'</strong> paling tinggi."`;
+            }
+        }
+
+        function resetPetaSuaraData() {
+            petaVotes = {
+                'sit-1': { sering: 24, kadang: 16, jarang: 10 },
+                'sit-2': { sering: 6,  kadang: 14, jarang: 30 },
+                'sit-3': { sering: 18, kadang: 22, jarang: 10 },
+                'sit-4': { sering: 20, kadang: 18, jarang: 12 },
+                'sit-5': { sering: 32, kadang: 12, jarang: 6 }
+            };
+            userPetaChoices = {};
+            showToast('Data pemetaan berhasil dikembalikan ke standar awal.');
+            renderPetaSuara();
+        }
+
+        // =========================================================================
+        // RODA MILAH TUTUR GAME DATASET & LOGIC
+        // =========================================================================
+        const WHEEL_THEMES = [
+            {
+                theme: 'Tema 1: Ejekan & Penghinaan',
+                color: '#f59e0b',
+                scenario: 'Di lapangan sekolah saat pelajaran olahraga, seorang teman kesulitan berlari cepat. Seseorang di barisan belakang berteriak: "Lari dong gendut, lambat banget kayak kura-kura!"',
+                options: [
+                    { text: 'A. Mengutip ejekan tersebut lalu tertawa bersama rombongan.', score: 0, bedah: '❌ Mengukuhkan ejekan fisik [fisik + perendahan] yang dapat merusak kepercayaan diri kawan.' },
+                    { text: 'B. Tetap diam dan mengabaikannya tanpa memberi dukungan.', score: 50, bedah: '🟡 Pasif, tidak memperkeruh suasana namun belum menunjukkan keunggulan etika kepedulian.' },
+                    { text: 'C. Menyemangati kawan dan menghentikan olokan fisik dengan santun.', score: 100, bedah: '🟢 Respons TRU Unggul! Memberi dukungan positif dan menjaga martabat kawan tutur.' }
+                ],
+                truText: '“Semangat ya! Terus berlari sesuai kemampuanmu, kita selesaikan bersama!”'
+            },
+            {
+                theme: 'Tema 2: Seksualisasi & Catcalling',
+                color: '#ec4899',
+                scenario: 'Seorang siswi berjalan melintasi lorong kelas, kemudian beberapa siswa bersiul dan berteriak: "Ssst, cantik banget mau ke mana? Sini dong ikut abang!"',
+                options: [
+                    { text: 'A. Membalas siulan dengan godaan bernada seksual lainnya.', score: 0, bedah: '❌ Melanggengkan perbuatan catcalling dan intimidasi verbal seksual di sekolah.' },
+                    { text: 'B. Menunduk dan pura-pura tidak mendengar.', score: 50, bedah: '🟡 Berusaha menghindari konflik, namun suasana tidak nyaman masih membayangi.' },
+                    { text: 'C. Menegur bersikap tertib bahwa jalan umum harus membuat semua nyaman.', score: 100, bedah: '🟢 Respons TRU Tertib & Unggul! Mengingatkan norma kesopanan di ruang publik sekolah.' }
+                ],
+                truText: '“Permisi teman-teman, mari jaga kenyamanan lorong sekolah dengan saling menghormati.”'
+            },
+            {
+                theme: 'Tema 3: Seksual & Pertanyaan Intim',
+                color: '#a855f7',
+                scenario: 'Saat berkumpul di kantin, seorang teman tiba-tiba menanyakan hal sangat pribadi: "Eh kamu masih perawan nggak sih? Ceritain dong pengalaman intimmu!"',
+                options: [
+                    { text: 'A. Menjawab dan menyebarkan rumor privasi kawan lain ke grup WhatsApp.', score: 0, bedah: '❌ Menginvasi privasi reproduksi dan memicu pencemaran nama baik.' },
+                    { text: 'B. Tertawa canggung lalu mengalihkan topik seadanya.', score: 50, bedah: '🟡 Cukup membatasi, namun belum menetapkan batasan privasi yang jelas.' },
+                    { text: 'C. Menegaskan secara ramah bahwa privasi pribadi wajib dihormati bersama.', score: 100, bedah: '🟢 Respons TRU Ramah & Tertib! Melindungi ranah privasi personal secara bermartabat.' }
+                ],
+                truText: '“Maaf ya, itu hal yang sangat pribadi dan tidak layak dibicarakan di tempat umum.”'
+            },
+            {
+                theme: 'Tema 4: Tutur Kasar & Toxic Digital',
+                color: '#f43f5e',
+                scenario: 'Dalam gim daring antar-kelas, salah satu anggota tim melakukan kesalahan tak sengaja. Teman satu tim mengumpat: "Anjing kamu, nggak becus main! Beban banget!"',
+                options: [
+                    { text: 'A. Membalas makian hewan dan mengusir pemain tersebut.', score: 0, bedah: '❌ Menambah toksisitas digital dan merusak kerjasama tim.' },
+                    { text: 'B. Diam saja dan langsung keluar dari permainan (AFK).', score: 50, bedah: '🟡 Menghindari amarah namun tidak menyelesaikan koordinasi tim.' },
+                    { text: 'C. Menenangkan emosi tim dan memberi arahan evaluasi yang solutif.', score: 100, bedah: '🟢 Respons TRU Unggul! Mendinginkan suasana dan fokus pada solusi bersama.' }
+                ],
+                truText: '“Tidak apa-apa, tetap tenang. Mari perbaiki koordinasi di ronde berikutnya!”'
+            },
+            {
+                theme: 'Tema 5: Manipulasi, Stigma & Gaslighting',
+                color: '#6366f1',
+                scenario: 'Seorang teman merasa tersinggung karena dijadikan bahan lelucon di depan umum. Namun yang mengejek malah berkata: "Aduh baperan banget kamu, bercanda doang kok!"',
+                options: [
+                    { text: 'A. Menyalahkan korban dengan berkata "Makanya jangan terlalu sensitif".', score: 0, bedah: '❌ Melakukan gaslighting dan menyalahkan perasaan korban.' },
+                    { text: 'B. Meminta korban untuk bersabar tanpa menegur pelaku.', score: 50, bedah: '🟡 Berniat baik namun belum menyelesaikan sumber masalah ejekan.' },
+                    { text: 'C. Memvalidasi perasaan korban dan meminta pelaku meminta maaf secara tulus.', score: 100, bedah: '🟢 Respons TRU Ramah & Solutif! Menghargai perasaan sesama dan menegakkan rasa empati.' }
+                ],
+                truText: '“Setiap orang punya batas kenyamanan. Mari minta maaf jika candaan kita membuatnya tidak nyaman.”'
+            }
+        ];
+
+        let currentWheelIndex = -1;
+        let isSpinning = false;
+
+        function initWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numSlices = WHEEL_THEMES.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            WHEEL_THEMES.forEach((item, i) => {
+                const angle = i * sliceAngle;
+                ctx.beginPath();
+                ctx.fillStyle = item.color;
+                ctx.moveTo(160, 160);
+                ctx.arc(160, 160, 150, angle, angle + sliceAngle);
+                ctx.lineTo(160, 160);
+                ctx.fill();
+                ctx.strokeStyle = '#0b0f17';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.translate(160, 160);
+                ctx.rotate(angle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText(`Tema ${i + 1}`, 130, 4);
+                ctx.restore();
+            });
+
+            // Center Wheel Circle
+            ctx.beginPath();
+            ctx.arc(160, 160, 40, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0b0f17';
+            ctx.fill();
+            ctx.strokeStyle = '#243047';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const wheelCanvas = document.getElementById('wheelCanvas');
+            const feedbackBox = document.getElementById('gameFeedbackBox');
+            feedbackBox.classList.add('hidden');
+
+            const randomIndex = Math.floor(Math.random() * WHEEL_THEMES.length);
+            currentWheelIndex = randomIndex;
+
+            const sliceDegree = 360 / WHEEL_THEMES.length;
+            const targetDegree = 360 * 5 + (360 - (randomIndex * sliceDegree + sliceDegree / 2)) - 90;
+
+            wheelCanvas.style.transform = `rotate(${targetDegree}deg)`;
+            playSound('spin');
+
+            setTimeout(() => {
+                isSpinning = false;
+                showGameScenario(randomIndex);
+                playSound('success');
+            }, 3500);
+        }
+
+        function showGameScenario(index) {
+            const theme = WHEEL_THEMES[index];
+            document.getElementById('wheelCurrentThemeBadge').innerHTML = `<span class="text-amber-400 font-extrabold">🎯 ${theme.theme}</span>`;
+            document.getElementById('gameThemeLabel').textContent = theme.theme;
+            document.getElementById('gameStatusBadge').textContent = 'Pilih Respons Terbaik';
+            document.getElementById('gameStatusBadge').className = 'px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30';
+            document.getElementById('gameScenarioBox').textContent = `"${theme.scenario}"`;
+
+            const container = document.getElementById('gameOptionsContainer');
+            container.innerHTML = theme.options.map((opt, optIdx) => `
+                <button onclick="selectGameOption(${optIdx})" class="w-full text-left p-4 rounded-2xl bg-baduy-dark/90 hover:bg-baduy-card border border-baduy-border hover:border-baduy-cyan/50 text-slate-200 text-xs sm:text-sm font-medium transition duration-200 flex items-center justify-between group">
+                    <span>${opt.text}</span>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-baduy-cyan transition ml-2"></i>
+                </button>
+            `).join('');
+        }
+
+        function selectGameOption(optionIndex) {
+            const theme = WHEEL_THEMES[currentWheelIndex];
+            const selected = theme.options[optionIndex];
+
+            // Update user TRU score
+            const scoreDelta = selected.score === 100 ? 50 : (selected.score === 50 ? 10 : -20);
+            userTRUScore = Math.max(0, userTRUScore + scoreDelta);
+            document.getElementById('userTRUScore').textContent = userTRUScore;
+
+            // Score Banner UI
+            const scoreBanner = document.getElementById('scoreBanner');
+            const scoreIconBox = document.getElementById('scoreIconBox');
+            const scoreTitle = document.getElementById('scoreBannerTitle');
+            const scoreSub = document.getElementById('scoreBannerSub');
+            const scoreBadge = document.getElementById('scoreBadgeDelta');
+
+            if (selected.score === 100) {
+                scoreBanner.className = 'p-4 rounded-2xl border flex items-center justify-between bg-emerald-950/40 border-emerald-500/40 text-emerald-300';
+                scoreIconBox.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-emerald-500/20 text-emerald-400';
+                scoreIconBox.innerHTML = '<i class="fa-solid fa-star"></i>';
+                scoreTitle.textContent = 'RESPONS SANGAT TEPAT (TRU UNGGUL)';
+                scoreSub.textContent = 'Pilihan kamu mencerminkan etika bahasa Tertib, Ramah, dan Unggul!';
+                scoreBadge.textContent = '+50 Pts';
+                playSound('success');
+            } else if (selected.score === 50) {
+                scoreBanner.className = 'p-4 rounded-2xl border flex items-center justify-between bg-amber-950/40 border-amber-500/40 text-amber-300';
+                scoreIconBox.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-amber-500/20 text-amber-400';
+                scoreIconBox.innerHTML = '<i class="fa-solid fa-shield-cat"></i>';
+                scoreTitle.textContent = 'RESPONS CUKUP (PERLU TINGKATKAN TRU)';
+                scoreSub.textContent = 'Pilihan pasif menghindari masalah, namun belum menunjukkan dorongan positif.';
+                scoreBadge.textContent = '+10 Pts';
+                playSound('spin');
+            } else {
+                scoreBanner.className = 'p-4 rounded-2xl border flex items-center justify-between bg-rose-950/40 border-rose-500/40 text-rose-300';
+                scoreIconBox.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-rose-500/20 text-rose-400';
+                scoreIconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                scoreTitle.textContent = 'RESPONS BERMASALAH';
+                scoreSub.textContent = 'Pilihan ini merusak etika tutur dan dapat melukai perasaan kawan.';
+                scoreBadge.textContent = '-20 Pts';
+                playSound('wrong');
+            }
+
+            // Bedah Tutur Breakdown
+            const bedahContainer = document.getElementById('bedahTuturContainer');
+            bedahContainer.innerHTML = theme.options.map((opt, idx) => `
+                <div class="p-3.5 rounded-xl text-xs ${idx === optionIndex ? 'bg-baduy-dark border-2 border-baduy-cyan' : 'bg-baduy-dark/60 border border-baduy-border/40'} space-y-1">
+                    <div class="font-bold text-white flex items-center justify-between">
+                        <span>${opt.text}</span>
+                        ${idx === optionIndex ? '<span class="text-[9px] px-2 py-0.5 rounded bg-baduy-cyan/20 text-baduy-cyan font-bold">Pilihan Kamu</span>' : ''}
+                    </div>
+                    <p class="text-slate-300 leading-relaxed">${opt.bedah}</p>
+                </div>
+            `).join('');
+
+            // Set TRU Sentence
+            document.getElementById('truResponseText').textContent = theme.truText;
+
+            // Show feedback box
+            document.getElementById('gameFeedbackBox').classList.remove('hidden');
+        }
+
+        function copyTRUSentence() {
+            const text = document.getElementById('truResponseText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Kalimat TRU berhasil disalin!');
+            });
+        }
+
+        // =========================================================================
+        // UJI KONTEKSTUAL KALIMAT LOGIC
+        // =========================================================================
+        function testSampleSentence(str) {
+            document.getElementById('simulasiInputText').value = str;
+            analyzeSentenceInput();
+        }
+
+        function analyzeSentenceInput() {
+            const text = document.getElementById('simulasiInputText').value.trim();
+            const output = document.getElementById('simulasiAnalysisResult');
+
+            if (!text) {
+                showToast('Ketikkan kalimat terlebih dahulu!', false);
+                return;
+            }
+
+            output.classList.remove('hidden');
+
+            const lower = text.toLowerCase();
+
+            // Simple Pattern Classifier Engine
+            const riskyKeywords = ['baperan', 'perawan', 'anjing', 'babi', 'salah sendiri', 'spill aib', 'open bo', 'body count', 'goblok', 'tolol', 'kontol', 'memek', 'norak', 'alay', 'cebol'];
+            const safeKeywords = ['kesehatan', 'pembahasan', 'hewan', 'mamalia', 'medis', 'pelajaran', 'jurnal', 'dokumen'];
+
+            let foundRisky = riskyKeywords.filter(k => lower.includes(k));
+            let foundSafe = safeKeywords.filter(k => lower.includes(k));
+
+            if (foundSafe.length > 0 && foundRisky.length === 0) {
+                output.className = 'p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 space-y-3';
+                output.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🟢</span>
+                        <div>
+                            <h5 class="text-sm font-extrabold text-white">STATUS: AMAN (EDUKASI / NETRAL / MEDIS)</h5>
+                            <p class="text-xs opacity-90">Penggunaan diksi dalam kalimat ini berada dalam konteks ilmiah, edukatif, atau deskriptif netral.</p>
+                        </div>
+                    </div>
+                    <div class="text-xs space-y-1 pt-2 border-t border-emerald-500/30">
+                        <p><strong>Catatan Sosiolinguistik:</strong> Kalimat tidak mengandung serangan personal atau perendahan martabat.</p>
+                    </div>
+                `;
+                playSound('success');
+            } else if (foundRisky.length > 0) {
+                output.className = 'p-6 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 space-y-3';
+                output.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🔴</span>
+                        <div>
+                            <h5 class="text-sm font-extrabold text-white">STATUS: BERMASALAH / BERISIKO TINGGI</h5>
+                            <p class="text-xs opacity-90">Terdeteksi diksi berisiko tinggi: <strong class="underline">${foundRisky.join(', ')}</strong></p>
+                        </div>
+                    </div>
+                    <div class="text-xs space-y-1.5 pt-2 border-t border-rose-500/30">
+                        <p><strong>Analisis Indikator:</strong> Kalimat berpotensi mengandung unsur perendahan, gaslighting, atau invasi privasi kawan tutur.</p>
+                        <p class="text-emerald-300"><strong>Saran Rekomendasi TRU:</strong> Gunakan penyampaian yang lebih konstruktif tanpa melabeli atau menyerang pribadi lawan bicara.</p>
+                    </div>
+                `;
+                playSound('wrong');
+            } else {
+                output.className = 'p-6 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 space-y-3';
+                output.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🟡</span>
+                        <div>
+                            <h5 class="text-sm font-extrabold text-white">STATUS: KONTEKSTUAL</h5>
+                            <p class="text-xs opacity-90">Kalimat ini memerlukan kecermatan konteks ruang, kedekatan antar-penutur, dan konsen kawan tutur.</p>
+                        </div>
+                    </div>
+                    <div class="text-xs space-y-1 pt-2 border-t border-amber-500/30">
+                        <p><strong>Saran Rekomendasi TRU:</strong> Pastikan kawan tutur merasa nyaman dan tuturan tidak diucapkan di ruang publik yang memicu salah paham.</p>
+                    </div>
+                `;
+                playSound('spin');
+            }
+        }
+
+        // =========================================================================
+        // PANTUN & AUDIO SYNTHESIS
+        // =========================================================================
+        const PANTUN_DATA = [
+            "Buah cempedak di luar pagar,<br>Tarik galah tolong jolokkan.<br>Bahasa indah enak didengar,<br>Tutur kata santun kita utamakan.",
+            "Ke pasar Cikini membeli selasih,<br>Bunga melati harum mewangi.<br>Bicara bersih ramah dan kasih,<br>Teman senang kerukunan ternikmati.",
+            "Jalan-jalan ke Kota Serang,<br>Mampir sebentar membeli beras.<br>Saling menghargai sesama insan,<br>Hindari tutur makian yang kasar.",
+            "Pohon beringin rindang daunnya,<br>Tempat berteduh saat dahaga.<br>Jagalah lisan dan perkataan kita,<br>Agar martabat selalu terjaga."
+        ];
+
+        function generateRandomPantun() {
+            const rand = PANTUN_DATA[Math.floor(Math.random() * PANTUN_DATA.length)];
+            document.getElementById('pantunText').innerHTML = `"${rand}"`;
+            playSound('success');
+        }
+
+        function playBeatSynth() {
+            playSound('success');
+            showToast('🥁 Melodi Dangdut TRU sedang diputar!');
+        }
+
+        // =========================================================================
+        // BANK KATA RENDERING & FILTERS
+        // =========================================================================
+        function renderBankKata(data = BANK_KATA_DATA) {
+            const grid = document.getElementById('bankKataGrid');
+            if (!grid) return;
+
+            document.getElementById('showingWordCount').textContent = data.length;
+
+            if (data.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full p-12 text-center text-slate-500 bg-baduy-card rounded-3xl border border-baduy-border">
+                        <i class="fa-solid fa-book-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="text-sm">Tidak ditemukan entri diksi yang sesuai pencarian Anda.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = data.map(item => {
+                let badgeColor = item.status === 'bermasalah' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                let statusLabel = item.status === 'bermasalah' ? '🔴 Bermasalah' : '🟡 Kontekstual';
+
+                return `
+                    <div class="bg-baduy-card p-6 rounded-3xl border border-baduy-border/80 flex flex-col justify-between space-y-4 shadow-xl hover:border-baduy-cyan/40 transition">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between gap-2 border-b border-baduy-border/40 pb-3">
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="font-black text-lg text-white">${item.term}</h4>
+                                        <span class="text-[10px] text-slate-400 font-mono">${item.phonetic}</span>
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${item.category} • ${item.subtheme}</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeColor}">
+                                    ${statusLabel}
+                                </span>
+                            </div>
+
+                            <div class="space-y-2 text-xs">
+                                <div>
+                                    <strong class="text-amber-400 text-[10px] uppercase font-bold tracking-wider block">Definisi Kebahasaan:</strong>
+                                    <p class="text-slate-300">${item.definition}</p>
+                                </div>
+
+                                <div class="p-2.5 rounded-xl bg-baduy-dark/80 border border-baduy-border/40 space-y-1">
+                                    <strong class="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Contoh Kalimat Berisiko:</strong>
+                                    <p class="text-rose-300 italic">"${item.sampleSentence}"</p>
+                                </div>
+
+                                <div class="space-y-1 text-[11px]">
+                                    <p class="text-emerald-300">${item.safeContext}</p>
+                                    <p class="text-rose-300">${item.problemContext}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-baduy-border/40 bg-baduy-dark/40 p-3 rounded-2xl border border-emerald-500/20">
+                            <strong class="text-emerald-400 text-[10px] uppercase font-bold tracking-wider block mb-0.5">
+                                <i class="fa-solid fa-lightbulb"></i> Solusi Alternatif TRU:
+                            </strong>
+                            <p class="text-xs font-semibold text-slate-200">${item.truAlternative}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterBankKata() {
+            const search = document.getElementById('bankSearchInput').value.toLowerCase();
+            const category = document.getElementById('bankCategoryFilter').value;
+            const status = document.getElementById('bankStatusFilter').value;
+
+            const filtered = BANK_KATA_DATA.filter(item => {
+                const matchSearch = item.term.toLowerCase().includes(search) || item.definition.toLowerCase().includes(search) || item.sampleSentence.toLowerCase().includes(search);
+                const matchCategory = category === 'all' || item.category === category;
+                const matchStatus = status === 'all' || item.status === status;
+                return matchSearch && matchCategory && matchStatus;
+            });
+
+            renderBankKata(filtered);
+        }
+
+        function quickSearchBank(query) {
+            document.getElementById('bankSearchInput').value = query;
+            filterBankKata();
+        }
+
+        // Navigation Tab Switching Logic
+        function switchTab(tabId) {
+            activeTab = tabId;
+
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+
+            const selectedTab = document.getElementById(`tab-${tabId}`);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+                selectedTab.classList.add('block');
+            }
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-baduy-light hover:bg-baduy-card hover:text-white border border-transparent';
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = 'nav-btn w-full px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center space-x-3 bg-baduy-cyan/20 text-baduy-cyan border border-baduy-cyan/30';
+            }
+
+            // Update Header Title
+            const titles = {
+                'bank-kata': 'Bank Kata <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Ensiklopedia Kebahasaan</span>',
+                'milah': 'Game Milah Tutur <span class="text-xs px-2.5 py-0.5 rounded-full bg-baduy-cyan/20 text-baduy-cyan border border-baduy-cyan/30">Simulasi Roda</span>',
+                'materi': 'Materi Tutur TRU <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Modul Edukasi</span>',
+                'ngaraksa': 'Uji Kontekstual Kalimat <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Engine Analisis</span>',
+                'peta-suara': 'Peta Suara Tutur <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">Pemetaan Partisipatif</span>',
+                'dangdut': 'Dangdut & Pantun TRU <span class="text-xs px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">Seni Edukasi</span>'
+            };
+            document.getElementById('headerTitle').innerHTML = titles[tabId] || 'NGARAKSA TRU';
+
+            if (tabId === 'milah') {
+                setTimeout(initWheel, 100);
+            } else if (tabId === 'peta-suara') {
+                renderPetaSuara();
+            }
+        }
+
+        function toggleAudioMute() {
+            isAudioMuted = !isAudioMuted;
+            document.getElementById('muteIcon').className = isAudioMuted ? 'fa-solid fa-volume-xmark text-rose-400' : 'fa-solid fa-volume-high text-baduy-cyan';
+            document.getElementById('muteText').textContent = isAudioMuted ? 'Suara Off' : 'Suara On';
+            showToast(isAudioMuted ? 'Suara dinonaktifkan.' : 'Suara diaktifkan.');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // Initialize on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            renderBankKata();
+            initWheel();
+            renderPetaSuara();
+        });
+    </script>
+</body>
+</html>
