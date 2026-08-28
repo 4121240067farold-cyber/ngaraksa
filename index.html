@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGARAKSA - Bank Kata, Game Milah Tutur & Kartu Kilas TRU</title>
+    <title>NGARAKSA - Kosakata Tutur, Game Milah Tutur & Kartu Kilas Tutur</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,6 +38,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         body {
@@ -139,7 +142,7 @@
                 </div>
             </div>
 
-            <button onclick="loginParticipant()" class="w-full py-4 rounded-xl bg-gradient-to-r from-ngaraksa-royal to-ngaraksa-sky text-ngaraksa-white font-bold text-sm hover:brightness-110 active:scale-95 transition shadow-lg shadow-ngaraksa-sky/20 flex items-center justify-center gap-2">
+            <button id="loginBtn" onclick="loginParticipant()" class="w-full py-4 rounded-xl bg-gradient-to-r from-ngaraksa-royal to-ngaraksa-sky text-ngaraksa-white font-bold text-sm hover:brightness-110 active:scale-95 transition shadow-lg shadow-ngaraksa-sky/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
                 <span>Masuk ke NGARAKSA</span>
                 <i class="fa-solid fa-arrow-right-to-bracket"></i>
             </button>
@@ -186,25 +189,25 @@
                 <nav class="space-y-2">
                     <button id="nav-bank-kata" onclick="playSound('click'); switchTab('bank-kata')" class="nav-btn w-full px-4 py-3.5 rounded-xl text-left text-xs font-bold transition-all flex items-center space-x-3 bg-ngaraksa-soft text-ngaraksa-royal border border-ngaraksa-border">
                         <i class="fa-solid fa-book-bookmark w-5 text-center text-base text-ngaraksa-mustard"></i>
-                        <span>Bank Kata</span>
+                        <span>Kosakata Tutur</span>
                         <span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-ngaraksa-yellow/20 text-ngaraksa-mustard font-bold">100 Entri</span>
                     </button>
 
                     <button id="nav-milah" onclick="playSound('click'); switchTab('milah')" class="nav-btn w-full px-4 py-3.5 rounded-xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-ngaraksa-secondary hover:bg-ngaraksa-soft hover:text-ngaraksa-royal border border-transparent">
                         <i class="fa-solid fa-arrows-spin w-5 text-center text-base text-ngaraksa-sky"></i>
-                        <span>Milah Tutur (Roda)</span>
+                        <span>Milah Tutur</span>
                         <span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-ngaraksa-ice text-ngaraksa-royal border border-ngaraksa-border font-bold">Game</span>
                     </button>
                     
                     <button id="nav-kartu-kilas" onclick="playSound('click'); switchTab('kartu-kilas')" class="nav-btn w-full px-4 py-3.5 rounded-xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-ngaraksa-secondary hover:bg-ngaraksa-soft hover:text-ngaraksa-royal border border-transparent">
                         <i class="fa-solid fa-layer-group w-5 text-center text-base text-purple-500"></i>
-                        <span>Kartu Kilas TRU</span>
+                        <span>Kartu Kilas Tutur</span>
                         <span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-200 font-bold">Kuis</span>
                     </button>
 
                     <button id="nav-materi" onclick="playSound('click'); switchTab('materi')" class="nav-btn w-full px-4 py-3.5 rounded-xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-ngaraksa-secondary hover:bg-ngaraksa-soft hover:text-ngaraksa-royal border border-transparent">
                         <i class="fa-solid fa-graduation-cap w-5 text-center text-base text-emerald-500"></i>
-                        <span>Materi Tutur TRU</span>
+                        <span>Materi Tutur</span>
                     </button>
 
                     <button id="nav-peta-suara" onclick="playSound('click'); switchTab('peta-suara')" class="nav-btn w-full px-4 py-3.5 rounded-xl text-left text-xs font-bold transition-all flex items-center space-x-3 text-ngaraksa-secondary hover:bg-ngaraksa-soft hover:text-ngaraksa-royal border border-transparent">
@@ -244,7 +247,7 @@
             <header class="p-4 md:px-8 md:py-5 border-b border-ngaraksa-border flex flex-wrap items-center justify-between gap-4 sticky top-0 bg-ngaraksa-ice/90 backdrop-blur-md z-30 shadow-sm">
                 <div>
                     <h2 id="headerTitle" class="text-xl md:text-2xl font-black text-ngaraksa-navy tracking-tight flex items-center gap-2">
-                        Bank Kata <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-yellow/20 text-ngaraksa-mustard border border-ngaraksa-yellow/50 font-bold">Ensiklopedia Kebahasaan</span>
+                        Kosakata Tutur <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-yellow/20 text-ngaraksa-mustard border border-ngaraksa-yellow/50 font-bold">Ensiklopedia Kebahasaan</span>
                     </h2>
                     <p id="headerSubtitle" class="text-xs text-ngaraksa-secondary mt-1 font-medium">Kamus Kebahasaan Berbasis Konteks <strong class="text-ngaraksa-royal">TRU (Tertib, Ramah, Unggul)</strong></p>
                 </div>
@@ -264,9 +267,9 @@
 
             <div class="p-4 md:p-8 space-y-8 flex-1">
 
-                <!-- TAB 1: BANK KATA -->
+                <!-- TAB 1: BANK KATA / KOSAKATA TUTUR -->
                 <section id="tab-bank-kata" class="tab-content block space-y-8">
-                    <!-- Hero Banner Bank Kata -->
+                    <!-- Hero Banner Kosakata Tutur -->
                     <div class="bg-gradient-to-r from-ngaraksa-royal via-ngaraksa-sky to-ngaraksa-soft p-6 md:p-8 rounded-[2rem] border border-ngaraksa-border relative overflow-hidden shadow-lg">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
                             <div class="space-y-3 max-w-2xl">
@@ -274,7 +277,7 @@
                                     <i class="fa-solid fa-gem text-ngaraksa-yellow"></i> KAMUS SOSIOLINGUISTIK & KONTEKSTUAL TUTUR BANTEN
                                 </span>
                                 <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-white leading-tight">
-                                    Bank Kata & Frasa Berisiko Kebahasaan
+                                    Kosakata Tutur & Frasa Berisiko Kebahasaan
                                 </h3>
                                 <p class="text-xs md:text-sm text-ngaraksa-navy/80 font-medium leading-relaxed">
                                     Jelajahi 100 entri diksi terdaftar dalam 5 tema utama: <strong class="text-ngaraksa-navy">Tema 1 (Ejekan & Perendahan)</strong>, <strong class="text-ngaraksa-navy">Tema 2 (Seksualisasi & Catcalling)</strong>, <strong class="text-ngaraksa-navy">Tema 3 (Ungkapan Seksual & Pertanyaan Intim)</strong>, <strong class="text-ngaraksa-navy">Tema 4 (Tutur Kasar & Toxic Digital)</strong>, dan <strong class="text-ngaraksa-navy">Tema 5 (Manipulasi, Stigma & Perundungan)</strong>.
@@ -349,7 +352,7 @@
                         <span class="px-3.5 py-1.5 rounded-full bg-ngaraksa-soft text-ngaraksa-royal text-[11px] font-bold border border-ngaraksa-border uppercase tracking-wider">
                             <i class="fa-solid fa-gamepad"></i> Game Pengambilan Keputusan
                         </span>
-                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy">Milah Tutur TRU</h3>
+                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy">Milah Tutur</h3>
                         <p class="text-xs md:text-sm text-ngaraksa-secondary font-medium">
                             Putar roda untuk memilih salah satu dari <strong>5 Tema Kebahasaan</strong>, hadapi situasi nyata, pilihlah respons terbaik, dan terapkan tutur kata yang <strong class="text-emerald-600">Tertib, Ramah, dan Unggul (TRU)</strong>!
                         </p>
@@ -456,7 +459,7 @@
                         <span class="px-3.5 py-1.5 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold border border-purple-200 uppercase tracking-wider inline-flex items-center gap-1.5">
                             <i class="fa-solid fa-layer-group"></i> Uji Kepekaan Bahasamu
                         </span>
-                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy">Kartu Kilas Ngaraksa Tutur</h3>
+                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy">Kartu Kilas Tutur</h3>
                         <p class="text-xs md:text-sm text-ngaraksa-secondary font-medium">
                             Dengarkan setiap skenario, bedah pilihan katanya, lalu tentukan jawabanmu menggunakan kartu kilas!
                         </p>
@@ -607,7 +610,7 @@
                         <span class="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-extrabold border border-emerald-200 uppercase tracking-wider inline-flex items-center gap-2">
                             <i class="fa-solid fa-graduation-cap"></i> MODUL DIGITAL SOSIOLINGUISTIK BANTEN
                         </span>
-                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy tracking-tight">Materi Tutur TRU</h3>
+                        <h3 class="text-2xl md:text-3xl font-black text-ngaraksa-navy tracking-tight">Materi Tutur</h3>
                         <p class="text-xs md:text-sm text-ngaraksa-secondary font-medium leading-relaxed">
                             Pusat pembelajaran komprehensif literasi kebahasaan, etika berkomunikasi, identifikasi pelecehan verbal, dan pembiasaan tutur kata yang <strong class="text-emerald-600 font-bold">Tertib, Ramah, dan Unggul (TRU)</strong> di ruang publik serta media digital.
                         </p>
@@ -1239,11 +1242,28 @@
         }
 
         // =========================================================================
+        // SUPABASE CONFIGURATION
+        // =========================================================================
+        const supabaseUrl = 'https://jnzcleqbufybjnxjoeqq.supabase.co';
+        const supabaseKey = 'sb_publishable_7PRhVV7MM3S5E5JWQ2r1Mw_qvR0KTFn'; 
+        let supabaseClient = null;
+
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            }
+        } catch (err) {
+            console.error("Gagal menginisialisasi Supabase:", err);
+        }
+
+        // =========================================================================
         // LOGIN / ENTRY SYSTEM
         // =========================================================================
-        function loginParticipant() {
+        async function loginParticipant() {
             const nama = document.getElementById('inputNama').value.trim();
             const sma = document.getElementById('inputSMA').value.trim();
+            const loginBtn = document.getElementById('loginBtn');
+            const originalBtnHtml = loginBtn.innerHTML;
             
             if(nama === '' || sma === '') {
                 playSound('wrong');
@@ -1251,30 +1271,68 @@
                 return;
             }
 
-            playSound('success');
-            
-            // Set data lokal ke antarmuka sidebar
-            document.getElementById('participantName').textContent = nama;
-            document.getElementById('participantSchool').textContent = sma;
+            // Set button to loading state
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span>Menyimpan...</span><i class="fa-solid fa-circle-notch fa-spin"></i>';
+            loginBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
-            // Transisi tampilan
-            document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainAppContainer').classList.remove('hidden');
-                document.getElementById('mainAppContainer').classList.add('flex');
+            try {
+                // Ensure client is initialized
+                if (!supabaseClient) {
+                    if (typeof window.supabase !== 'undefined') {
+                        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    } else {
+                        throw new Error("Library Supabase gagal dimuat. Periksa koneksi internet.");
+                    }
+                }
+
+                // Insert into public.peserta
+                const { error } = await supabaseClient
+                    .from('peserta')
+                    .insert([{ nama: nama, asal_sekolah: sma }]);
+
+                if (error) {
+                    throw error; // Melemparkan error sebenarnya dari Supabase
+                }
+
+                playSound('success');
                 
-                // Initialize default components visually
-                renderBankKata();
-                renderPetaSuara();
+                // Set data lokal ke antarmuka sidebar
+                document.getElementById('participantName').textContent = nama;
+                document.getElementById('participantSchool').textContent = sma;
+
+                // Transisi tampilan
+                document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainAppContainer').classList.remove('hidden');
+                    document.getElementById('mainAppContainer').classList.add('flex');
+                    
+                    // Initialize default components visually
+                    renderBankKata();
+                    renderPetaSuara();
+                    
+                    // Coba init musik latar
+                    initBGM();
+                }, 300);
+
+            } catch (error) {
+                console.error("Supabase Error:", error);
+                playSound('wrong');
                 
-                // Coba init musik latar
-                initBGM();
-            }, 300);
+                // Menampilkan error nyata ke toast, jika ada pesan dari object error Supabase
+                let errorMsg = error.message || "Terjadi kesalahan sistem saat menyimpan data.";
+                showToast(errorMsg, false);
+                
+                // Restore button state (Tetap di halaman login jika gagal)
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalBtnHtml;
+                loginBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
         }
 
         // =========================================================================
-        // FULL DATASET: BANK KATA (100 ENTRIES)
+        // FULL DATASET: BANK KATA / KOSAKATA TUTUR (100 ENTRIES)
         // =========================================================================
         const BANK_KATA_DATA = [
             { id: 't1-1', term: 'GENDUT', category: 'Tema 1', subtheme: 'Ejekan Fisik', status: 'kontekstual', phonetic: '/gən.dut/', sampleSentence: 'Gendut banget kamu sekarang.', definition: 'Deskripsi ukuran fisik atau tubuh di atas rata-rata.', safeContext: '🟢 Digunakan untuk deskripsi medis netral/edukatif ("Dokter mencatat pasien mengalami kenaikan berat badan").', problemContext: '🔴 Bermasalah jika digunakan secara jelas untuk mengejek fisik ("Gendut banget kamu sekarang").', truAlternative: 'Hargai penampilan kawan tutur atau gunakan sapaan ramah tanpa mengomentari perubahan bentuk tubuh.' },
@@ -1936,7 +1994,7 @@
                 return `
                     <div onclick="playSound('click'); startKKCase(${idx})" class="p-6 md:p-8 bg-white hover:bg-ngaraksa-ice border-2 ${isCompleted ? 'border-emerald-300 hover:border-emerald-400' : 'border-ngaraksa-border hover:border-purple-300'} rounded-[2rem] cursor-pointer transition-all shadow-sm hover:shadow-md flex flex-col justify-between h-full group">
                         <div class="space-y-2">
-                            <span class="text-[10px] font-bold ${isCompleted ? 'text-emerald-600' : 'text-purple-600'} uppercase tracking-wider block">KASUS ${idx + 1}</span>
+                            <span class="text-[10px] font-bold ${isCompleted ? 'text-emerald-600' : 'textpurple-600'} uppercase tracking-wider block">KASUS ${idx + 1}</span>
                             <h4 class="text-ngaraksa-navy font-black text-sm md:text-base leading-snug group-hover:text-purple-700 transition">${caseData.caseTitle.replace(/KASUS \d+: /, '')}</h4>
                         </div>
                         <div class="mt-6">
@@ -2303,10 +2361,10 @@
             }
 
             const titles = {
-                'bank-kata': 'Bank Kata <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-yellow/20 text-ngaraksa-mustard border border-ngaraksa-yellow/50 font-bold">Ensiklopedia Kebahasaan</span>',
-                'milah': 'Game Milah Tutur <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-ice text-ngaraksa-royal border border-ngaraksa-border font-bold">Simulasi Roda</span>',
-                'kartu-kilas': 'Kartu Kilas TRU <span class="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-600 border border-purple-200 font-bold">Uji Kepekaan</span>',
-                'materi': 'Materi Tutur TRU <span class="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">Modul Digital</span>',
+                'bank-kata': 'Kosakata Tutur <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-yellow/20 text-ngaraksa-mustard border border-ngaraksa-yellow/50 font-bold">Ensiklopedia Kebahasaan</span>',
+                'milah': 'Milah Tutur <span class="text-xs px-3 py-1 rounded-full bg-ngaraksa-ice text-ngaraksa-royal border border-ngaraksa-border font-bold">Simulasi Roda</span>',
+                'kartu-kilas': 'Kartu Kilas Tutur <span class="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-600 border border-purple-200 font-bold">Uji Kepekaan</span>',
+                'materi': 'Materi Tutur <span class="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">Modul Digital</span>',
                 'peta-suara': 'Peta Suara Tutur <span class="text-xs px-3 py-1 rounded-full bg-rose-100 text-rose-600 border border-rose-200 font-bold">Pemetaan Partisipatif</span>',
                 'dangdut': 'Dangdut Tutur <span class="text-xs px-3 py-1 rounded-full bg-pink-100 text-pink-600 border border-pink-200 font-bold">Musik Edukasi</span>'
             };
